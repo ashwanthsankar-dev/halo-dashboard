@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#07030e">
+    <title>Mission Archive | HALO AI</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    <style>
+        :root {
+            color-scheme: dark;
+            --text: #f5efff;
+            --muted: #c0b3ce;
+            --soft-muted: #a99bb8;
+            --violet: #d7a2ff;
+            --page: #07040f;
+            --panel: rgba(18, 11, 29, 0.88);
+            --line: rgba(211, 176, 245, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-width: 320px;
+            background: var(--page);
+        }
+
+        body {
+            position: relative;
+            isolation: isolate;
+            min-width: 320px;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            background:
+                radial-gradient(ellipse at 76% 32%, rgba(84, 34, 139, 0.24), transparent 42%),
+                radial-gradient(ellipse at 8% 82%, rgba(49, 24, 91, 0.12), transparent 35%),
+                var(--page);
+            color: var(--text);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body::before {
+            position: fixed;
+            z-index: -1;
+            inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 11% 18%, rgba(241, 226, 255, 0.72) 50%, transparent 100%),
+                radial-gradient(1px 1px at 79% 12%, rgba(211, 163, 255, 0.7) 50%, transparent 100%),
+                radial-gradient(1px 1px at 62% 66%, rgba(241, 226, 255, 0.56) 50%, transparent 100%),
+                radial-gradient(1px 1px at 28% 78%, rgba(199, 144, 255, 0.62) 50%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 92% 49%, rgba(241, 226, 255, 0.7) 50%, transparent 100%);
+            background-size: 340px 310px, 430px 390px, 520px 470px, 390px 440px, 610px 530px;
+            content: "";
+            opacity: 0.54;
+            pointer-events: none;
+        }
+
+        a,
+        button {
+            font: inherit;
+        }
+
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid #e4c4ff;
+            outline-offset: 4px;
+        }
+
+        .site-header,
+        main,
+        .site-footer {
+            width: min(100% - 64px, 1380px);
+            margin-inline: auto;
+        }
+
+        .site-header {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            min-height: 92px;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(211, 176, 245, 0.08);
+        }
+
+        .brand {
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-decoration: none;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #e2d4ef;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: color 160ms ease, transform 160ms ease;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            transform: translateX(-3px);
+        }
+
+        .back-arrow {
+            color: var(--violet);
+            font-size: 1.1rem;
+        }
+
+        main {
+            padding-block: 66px 54px;
+        }
+
+        .intro {
+            position: relative;
+            min-height: 300px;
+            margin-bottom: 38px;
+            padding-right: min(45%, 530px);
+            animation: rise-in 650ms ease both;
+        }
+
+        .intro > :not(.rover-viewer) {
+            position: relative;
+            z-index: 1;
+        }
+
+        .rover-viewer {
+            position: absolute;
+            top: -34px;
+            right: 0;
+            width: min(45%, 530px);
+            height: 330px;
+            margin: 0;
+            pointer-events: none;
+        }
+
+        .rover-viewer canvas,
+        .station-art canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .rover-caption {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            color: rgba(224, 206, 245, 0.7);
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+        }
+
+        .model-status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            color: var(--soft-muted);
+            font-size: 0.76rem;
+            text-align: center;
+            transform: translate(-50%, -50%);
+        }
+
+        .model-status[hidden] {
+            display: none;
+        }
+
+        .intro::after {
+            position: absolute;
+            z-index: -1;
+            top: -55px;
+            left: 310px;
+            color: rgba(172, 113, 224, 0.055);
+            content: "ORBIT";
+            font-size: clamp(5rem, 13vw, 11rem);
+            font-weight: 900;
+            letter-spacing: 0.035em;
+            line-height: 1;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .eyebrow {
+            margin-bottom: 17px;
+            color: #d1a7f2;
+            font-size: 0.69rem;
+            font-weight: 750;
+            letter-spacing: 0.24em;
+            line-height: 1.5;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 14px;
+            font-size: clamp(2.8rem, 6vw, 5.25rem);
+            font-weight: 720;
+            letter-spacing: -0.06em;
+            line-height: 1;
+        }
+
+        .intro-copy {
+            max-width: 650px;
+            margin-bottom: 17px;
+            color: var(--muted);
+            font-size: 1.03rem;
+            line-height: 1.75;
+        }
+
+        .disclaimer {
+            margin-bottom: 0;
+            color: var(--soft-muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.025em;
+        }
+
+        .mission-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.9fr) minmax(290px, 1fr);
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .featured-mission {
+            position: relative;
+            display: flex;
+            min-height: 475px;
+            flex-direction: column;
+            justify-content: flex-end;
+            overflow: hidden;
+            padding: clamp(27px, 4vw, 52px);
+            border: 1px solid rgba(209, 171, 245, 0.25);
+            border-radius: 26px;
+            background:
+                linear-gradient(90deg, rgba(7, 4, 17, 0.98) 0%, rgba(9, 5, 20, 0.9) 42%, rgba(10, 5, 20, 0.34) 100%),
+                linear-gradient(0deg, rgba(7, 4, 15, 0.96), transparent 76%),
+                radial-gradient(ellipse at 78% 39%, rgba(149, 91, 220, 0.42), transparent 38%),
+                linear-gradient(135deg, #201033, #0c0818 64%, #25123a);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28), inset 0 0 55px rgba(119, 62, 175, 0.08);
+            animation: rise-in 700ms 80ms ease both;
+        }
+
+        .featured-mission::before {
+            position: absolute;
+            top: 50%;
+            right: -80px;
+            width: min(58%, 490px);
+            aspect-ratio: 1;
+            border: 1px solid rgba(209, 178, 246, 0.18);
+            border-radius: 50%;
+            background:
+                radial-gradient(circle at 34% 30%, rgba(204, 167, 243, 0.38), transparent 5%),
+                radial-gradient(circle at 38% 38%, rgba(107, 64, 162, 0.92), rgba(44, 27, 81, 0.96) 46%, rgba(12, 8, 24, 0.98) 72%);
+            box-shadow: inset -26px -16px 70px rgba(1, 0, 8, 0.78), 0 0 70px rgba(143, 81, 210, 0.23);
+            content: "";
+            transform: translateY(-45%);
+        }
+
+        .featured-mission::after {
+            position: absolute;
+            top: 13%;
+            right: -8%;
+            width: 61%;
+            height: 45%;
+            border: 1px solid rgba(224, 202, 255, 0.32);
+            border-radius: 50%;
+            content: "";
+            opacity: 0.56;
+            transform: rotate(-17deg);
+        }
+
+        .station-art {
+            position: absolute;
+            z-index: 0;
+            top: 2%;
+            right: -9%;
+            width: min(65%, 560px);
+            height: 68%;
+            pointer-events: none;
+        }
+
+        .mission-content {
+            position: relative;
+            z-index: 1;
+            max-width: min(57%, 660px);
+        }
+
+        .mission-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 8px 11px;
+            border: 1px solid rgba(220, 190, 255, 0.28);
+            border-radius: 999px;
+            background: rgba(28, 15, 44, 0.7);
+            color: #e6d2fb;
+            font-size: 0.67rem;
+            font-weight: 750;
+            letter-spacing: 0.15em;
+        }
+
+        .mission-badge::before {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #d7a2ff;
+            box-shadow: 0 0 12px rgba(215, 162, 255, 0.9);
+            content: "";
+        }
+
+        .mission-title {
+            margin-bottom: 8px;
+            font-size: clamp(3.2rem, 7vw, 6rem);
+            font-weight: 820;
+            letter-spacing: 0.035em;
+            line-height: 0.98;
+            text-shadow: 0 5px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .mission-subtitle {
+            margin-bottom: 15px;
+            color: #e3d4f1;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .mission-description {
+            max-width: 600px;
+            margin-bottom: 23px;
+            color: #c8bdd4;
+            font-size: 0.94rem;
+            line-height: 1.75;
+        }
+
+        .mission-meta {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin: 0 0 25px;
+            padding: 17px 0 0;
+            border-top: 1px solid rgba(224, 202, 255, 0.17);
+        }
+
+        .mission-meta div {
+            min-width: 0;
+        }
+
+        .mission-meta dt {
+            margin-bottom: 7px;
+            color: #b7a7c7;
+            font-size: 0.7rem;
+            line-height: 1.4;
+        }
+
+        .mission-meta dd {
+            margin: 0;
+            color: #f3eaff;
+            font-size: 0.84rem;
+            font-weight: 650;
+            line-height: 1.4;
+        }
+
+        .launch-button {
+            display: inline-flex;
+            min-height: 48px;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 0 20px;
+            border: 1px solid rgba(240, 222, 255, 0.45);
+            border-radius: 999px;
+            background: #eee2fb;
+            color: #21132d;
+            font-size: 0.9rem;
+            font-weight: 750;
+            text-decoration: none;
+            box-shadow: 0 0 30px rgba(160, 63, 240, 0.2);
+            transition: transform 170ms ease, box-shadow 170ms ease, background 170ms ease;
+            cursor: pointer;
+        }
+
+        .launch-button:hover {
+            transform: translateY(-2px);
+            background: #f7efff;
+            box-shadow: 0 0 38px rgba(176, 76, 255, 0.34);
+        }
+
+        .launch-arrow {
+            color: #7425b8;
+            font-size: 1.1rem;
+        }
+
+        .launch-support {
+            margin: 11px 0 0;
+            color: #b7a8c6;
+            font-size: 0.77rem;
+        }
+
+        .briefing-message {
+            min-height: 1.5em;
+            margin: 10px 0 0;
+            color: #e1c4ff;
+            font-size: 0.83rem;
+        }
+
+        .concept-list {
+            display: grid;
+            grid-template-rows: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .concept-panel {
+            position: relative;
+            min-height: 145px;
+            overflow: hidden;
+            padding: 21px 23px;
+            border: 1px solid var(--line);
+            border-radius: 19px;
+            background:
+                radial-gradient(ellipse at 100% 0%, rgba(117, 61, 164, 0.17), transparent 55%),
+                linear-gradient(145deg, rgba(29, 18, 43, 0.9), rgba(12, 8, 20, 0.94));
+            box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
+            animation: rise-in 650ms ease both;
+        }
+
+        .concept-panel:nth-child(2) {
+            animation-delay: 100ms;
+        }
+
+        .concept-panel:nth-child(3) {
+            animation-delay: 180ms;
+        }
+
+        .concept-panel::before {
+            position: absolute;
+            right: -32px;
+            bottom: -48px;
+            width: 120px;
+            height: 120px;
+            border: 1px solid rgba(207, 165, 245, 0.09);
+            border-radius: 50%;
+            box-shadow: 0 0 0 13px rgba(207, 165, 245, 0.025), 0 0 0 28px rgba(207, 165, 245, 0.018);
+            content: "";
+            pointer-events: none;
+        }
+
+        .concept-title {
+            margin-bottom: 4px;
+            font-size: 1.35rem;
+            font-weight: 780;
+            letter-spacing: 0.12em;
+        }
+
+        .concept-subtitle {
+            margin-bottom: 9px;
+            color: #e0d0ef;
+            font-size: 0.79rem;
+        }
+
+        .concept-description {
+            max-width: 390px;
+            margin-bottom: 13px;
+            color: var(--muted);
+            font-size: 0.81rem;
+            line-height: 1.55;
+        }
+
+        .concept-status {
+            display: inline-block;
+            color: #c797eb;
+            font-size: 0.65rem;
+            font-weight: 750;
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
+        }
+
+        .journey {
+            margin-top: 22px;
+            padding: 19px 24px;
+            border: 1px solid rgba(211, 176, 245, 0.13);
+            border-radius: 18px;
+            background: linear-gradient(100deg, rgba(25, 15, 38, 0.83), rgba(12, 8, 20, 0.72));
+        }
+
+        .journey-steps {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 14px;
+            margin-bottom: 8px;
+            color: #efe5f8;
+            font-size: 0.88rem;
+            font-weight: 650;
+            line-height: 1.5;
+        }
+
+        .journey-arrow {
+            color: #c390ea;
+            font-size: 1.02rem;
+        }
+
+        .journey p {
+            margin: 0;
+            color: var(--soft-muted);
+            font-size: 0.78rem;
+            line-height: 1.6;
+        }
+
+        .site-footer {
+            padding-block: 0 28px;
+            color: #92869f;
+            font-size: 0.72rem;
+            line-height: 1.6;
+        }
+
+        .model-credit {
+            display: block;
+            margin-top: 6px;
+            color: #a99bb8;
+            font-size: 0.68rem;
+        }
+
+        .model-credit a {
+            color: #cbb1e2;
+        }
+
+        .soundtrack-control {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 3;
+            display: grid;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            place-items: center;
+            border: 1px solid rgba(223, 195, 255, 0.3);
+            border-radius: 50%;
+            background: rgba(15, 8, 24, 0.92);
+            color: var(--violet);
+            font-size: 1.08rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(14px);
+            cursor: pointer;
+        }
+
+        .soundtrack-control:hover {
+            background: rgba(35, 17, 52, 0.96);
+        }
+
+        @keyframes rise-in {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 980px) {
+            .mission-layout {
+                grid-template-columns: minmax(0, 1.35fr) minmax(270px, 1fr);
+            }
+
+            .mission-meta {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                row-gap: 13px;
+            }
+
+            .featured-mission {
+                min-height: 510px;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .site-header,
+            main,
+            .site-footer {
+                width: min(100% - 40px, 620px);
+            }
+
+            .site-header {
+                min-height: 76px;
+            }
+
+            main {
+                padding-block: 48px 38px;
+            }
+
+            .intro {
+                margin-bottom: 28px;
+                min-height: 0;
+                padding-right: 0;
+            }
+
+            .intro::after {
+                top: -24px;
+                right: 0;
+                left: auto;
+                font-size: 5rem;
+            }
+
+            .intro-copy {
+                font-size: 0.95rem;
+            }
+
+            .rover-viewer {
+                position: relative;
+                top: auto;
+                right: auto;
+                width: min(100%, 520px);
+                height: 260px;
+                margin: 12px auto 0;
+            }
+
+            .mission-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .mission-meta {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .featured-mission {
+                min-height: 560px;
+                padding: 28px 23px;
+            }
+
+            .featured-mission::before {
+                top: 30%;
+                right: -95px;
+                width: 82%;
+                transform: translateY(-50%);
+            }
+
+            .featured-mission::after {
+                top: 13%;
+                right: -17%;
+                width: 94%;
+                height: 43%;
+            }
+
+            .station-art {
+                position: relative;
+                top: auto;
+                right: auto;
+                width: 100%;
+                height: 210px;
+                margin: -8px auto 8px;
+            }
+
+            .mission-content {
+                max-width: none;
+            }
+
+            .mission-title {
+                font-size: clamp(3.3rem, 15vw, 5rem);
+            }
+
+            .mission-description {
+                font-size: 0.88rem;
+            }
+
+            .concept-list {
+                grid-template-rows: none;
+            }
+
+            .concept-panel {
+                min-height: 0;
+            }
+
+            .journey {
+                padding: 17px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .site-header,
+            main,
+            .site-footer {
+                width: calc(100% - 32px);
+            }
+
+            .back-link {
+                font-size: 0.8rem;
+            }
+
+            .featured-mission {
+                min-height: 590px;
+                padding-inline: 19px;
+            }
+
+            .mission-meta {
+                gap: 12px 8px;
+            }
+
+            .mission-meta dt {
+                font-size: 0.66rem;
+            }
+
+            .mission-meta dd {
+                font-size: 0.78rem;
+            }
+
+            .journey-steps {
+                gap: 6px 9px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+    <script src="mission-soundtrack.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="index.html">HALO AI</a>
+        <a class="back-link" href="index.html">
+            <span class="back-arrow" aria-hidden="true">←</span>
+            <span>Back to overview</span>
+        </a>
+    </header>
+
+    <main>
+        <section class="intro" aria-labelledby="archive-title">
+            <p class="eyebrow">MISSION OPERATIONS / SCENARIO ARCHIVE</p>
+            <h1 id="archive-title">Choose your mission.</h1>
+            <p class="intro-copy">Explore how HALO AI could support crews across different mission environments. Start with NYMPHA, our ISS mission scenario.</p>
+            <p class="disclaimer">Prototype mission scenarios · Synthetic crew data · No operational deployments</p>
+            <figure class="rover-viewer">
+                <canvas id="rover-canvas" role="img" aria-label="Three-dimensional Space Engineers rover model"></canvas>
+                <span class="rover-caption" aria-hidden="true">SPACE ENGINEERS ROVER</span>
+                <p class="model-status" id="rover-status" role="status" aria-live="polite">Loading rover model…</p>
+            </figure>
+        </section>
+
+        <section class="mission-layout" aria-label="Mission scenarios">
+            <article class="featured-mission" aria-labelledby="nympha-title">
+                <div class="station-art">
+                    <canvas id="iss-canvas" role="img" aria-label="Three-dimensional International Space Station model"></canvas>
+                    <p class="model-status" id="iss-status" role="status" aria-live="polite">Loading ISS model…</p>
+                </div>
+
+                <div class="mission-content">
+                    <span class="mission-badge">MISSION SCENARIO</span>
+                    <h2 class="mission-title" id="nympha-title">NYMPHA</h2>
+                    <p class="mission-subtitle">International Space Station · Mission scenario</p>
+                    <p class="mission-description">Follow four astronauts through a 250-day orbital mission and a simulated one-year Earth recovery programme. Explore cognitive check-ins, targeted training activities, and postflight follow-up.</p>
+
+                    <dl class="mission-meta">
+                        <div>
+                            <dt>Environment</dt>
+                            <dd>Low Earth orbit</dd>
+                        </div>
+                        <div>
+                            <dt>Crew</dt>
+                            <dd>4 astronauts</dd>
+                        </div>
+                        <div>
+                            <dt>Mission</dt>
+                            <dd>250 days</dd>
+                        </div>
+                        <div>
+                            <dt>Earth follow-up</dt>
+                            <dd>12 months</dd>
+                        </div>
+                    </dl>
+
+                    <div>
+                        <button class="launch-button" id="launch-nympha" type="button">
+                            <span>Launch NYMPHA</span>
+                            <span class="launch-arrow" aria-hidden="true">→</span>
+                        </button>
+                        <p class="launch-support">Start with a short mission briefing.</p>
+                        <p class="briefing-message" id="briefing-message" role="status" aria-live="polite"></p>
+                    </div>
+                </div>
+            </article>
+
+            <div class="concept-list" aria-label="Mission concepts">
+                <article class="concept-panel" aria-labelledby="selene-title">
+                    <h3 class="concept-title" id="selene-title">SELENE</h3>
+                    <p class="concept-subtitle">Lunar-orbit mission concept</p>
+                    <p class="concept-description">Cognitive support for demanding procedures and changing workloads.</p>
+                    <span class="concept-status">Concept preview</span>
+                </article>
+                <article class="concept-panel" aria-labelledby="ares-title">
+                    <h3 class="concept-title" id="ares-title">ARES</h3>
+                    <p class="concept-subtitle">Mars-analog habitat concept</p>
+                    <p class="concept-description">Cognitive check-ins for an isolated crew during a simulated surface mission.</p>
+                    <span class="concept-status">Concept preview</span>
+                </article>
+                <article class="concept-panel" aria-labelledby="horizon-title">
+                    <h3 class="concept-title" id="horizon-title">HORIZON</h3>
+                    <p class="concept-subtitle">Deep-space transit concept</p>
+                    <p class="concept-description">Personalized performance monitoring for a future long-duration crew.</p>
+                    <span class="concept-status">Concept preview</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="journey" aria-label="Mission journey">
+            <div class="journey-steps">
+                <span>Before launch</span><span class="journey-arrow" aria-hidden="true">→</span>
+                <span>In orbit</span><span class="journey-arrow" aria-hidden="true">→</span>
+                <span>Return to Earth</span><span class="journey-arrow" aria-hidden="true">→</span>
+                <span>Recovery follow-up</span>
+            </div>
+            <p>One continuous view of the astronaut’s cognitive-performance journey.</p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        Mission scenarios for research and demonstration. HALO AI is a decision-support prototype, not a medical diagnostic tool.
+        <small class="model-credit">ISS model by <a href="https://sketchfab.com/uperesito" target="_blank" rel="noopener noreferrer">uperesito</a>, via <a href="https://sketchfab.com/3d-models/iss-813f5b296e584c26bf386ca39de6c3d4" target="_blank" rel="noopener noreferrer">Sketchfab</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>.</small>
+    </footer>
+
+    <audio id="archive-soundtrack" preload="none" loop src="./Cornfield%20Chase%20%E2%80%A2%20Hans%20Zimmer).mp3"></audio>
+    <button class="soundtrack-control" id="soundtrack-toggle" type="button" aria-pressed="false" aria-label="Play soundtrack" title="Play soundtrack">
+        <span id="soundtrack-icon" aria-hidden="true">♪</span>
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function createModelViewer(canvasId, statusId, targetSize) {
+            const canvas = document.getElementById(canvasId);
+            const status = document.getElementById(statusId);
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+            renderer.setClearColor(0x000000, 0);
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 1000);
+            let viewportWidth = 0;
+            let viewportHeight = 0;
+            scene.add(new THREE.AmbientLight(0xd8c6f5, 1.35));
+
+            const keyLight = new THREE.DirectionalLight(0xf1e8ff, 2.2);
+            keyLight.position.set(-4, 7, 9);
+            scene.add(keyLight);
+
+            const rimLight = new THREE.DirectionalLight(0x9470ff, 1.1);
+            rimLight.position.set(6, 2, -5);
+            scene.add(rimLight);
+
+            const modelAnchor = new THREE.Group();
+            scene.add(modelAnchor);
+            let visible = false;
+            let animationFrame = 0;
+
+            function fitModel(model, rotation = [0, 0, 0], framing = 1) {
+                const bounds = new THREE.Box3().setFromObject(model);
+                const size = bounds.getSize(new THREE.Vector3());
+                const center = bounds.getCenter(new THREE.Vector3());
+                const scale = targetSize / Math.max(size.x, size.y, size.z);
+                model.scale.setScalar(scale);
+                model.position.sub(center.multiplyScalar(scale));
+                modelAnchor.add(model);
+                modelAnchor.rotation.set(...rotation);
+
+                const fittedSize = new THREE.Box3().setFromObject(modelAnchor).getSize(new THREE.Vector3());
+                const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+                const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * camera.aspect);
+                const distance = Math.max(
+                    (fittedSize.y / 2) / Math.tan(verticalFov / 2),
+                    (fittedSize.x / 2) / Math.tan(horizontalFov / 2),
+                    fittedSize.z
+                ) * 1.2 * framing;
+                camera.position.set(0, 0, distance);
+                camera.lookAt(0, 0, 0);
+                status.hidden = true;
+                render();
+            }
+
+            function resize() {
+                const width = canvas.clientWidth;
+                const height = canvas.clientHeight;
+                if (!width || !height || (width === viewportWidth && height === viewportHeight)) {
+                    return;
+                }
+
+                viewportWidth = width;
+                viewportHeight = height;
+                renderer.setSize(width, height, false);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                render();
+            }
+
+            function render() {
+                if (animationFrame || !visible || document.hidden) {
+                    return;
+                }
+
+                animationFrame = requestAnimationFrame(() => {
+                    animationFrame = 0;
+                    if (!visible || document.hidden || !viewportWidth || !viewportHeight) {
+                        return;
+                    }
+                    if (!reducedMotion) {
+                        modelAnchor.rotation.y += 0.001;
+                    }
+                    renderer.render(scene, camera);
+                    if (!reducedMotion) {
+                        render();
+                    }
+                });
+            }
+
+            new ResizeObserver(resize).observe(canvas.parentElement);
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver((entries) => {
+                    visible = entries.some((entry) => entry.isIntersecting);
+                    if (visible) {
+                        render();
+                    } else if (animationFrame) {
+                        cancelAnimationFrame(animationFrame);
+                        animationFrame = 0;
+                    }
+                }, { rootMargin: '100px' }).observe(canvas);
+            } else {
+                visible = true;
+            }
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = 0;
+                } else if (!document.hidden) {
+                    render();
+                }
+            });
+            resize();
+            render();
+
+            return {
+                fitModel,
+                showError(modelName, error) {
+                    status.textContent = `${modelName} model could not be loaded.`;
+                    console.error(`Unable to load the ${modelName} model.`, error);
+                }
+            };
+        }
+
+        const issViewer = createModelViewer('iss-canvas', 'iss-status', 8);
+        function loadIssModel() {
+            new THREE.GLTFLoader().load(
+                './iss/scene.gltf',
+                (gltf) => {
+                    issViewer.fitModel(gltf.scene, [-0.18, 0.85, 0], 1.25);
+                },
+                undefined,
+                (error) => issViewer.showError('ISS', error)
+            );
+        }
+
+        const roverViewer = createModelViewer('rover-canvas', 'rover-status', 9);
+        const roverBasePath = './rover-space-engineers-steam/source/';
+
+        function loadWhenVisible(element, load) {
+            if (!('IntersectionObserver' in window)) {
+                load();
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    observer.disconnect();
+                    load();
+                }
+            }, { rootMargin: '120px' });
+            observer.observe(element);
+        }
+
+        function loadRoverMaterials() {
+            return new Promise((resolve, reject) => {
+                const materialLoader = new THREE.MTLLoader();
+                materialLoader.setPath(roverBasePath);
+                materialLoader.setResourcePath(roverBasePath);
+                materialLoader.load('rover-preview.mtl', resolve, undefined, reject);
+            });
+        }
+
+        function waitForRoverTextures(materials) {
+            const textures = new Set();
+            Object.values(materials.materials).forEach((material) => {
+                if (material.map) {
+                    textures.add(material.map);
+                }
+                if (material.alphaMap) {
+                    textures.add(material.alphaMap);
+                }
+            });
+
+            return Promise.all(Array.from(textures, (texture) => new Promise((resolve, reject) => {
+                const image = texture.image;
+                if (!image || (image.complete && image.naturalWidth > 0)) {
+                    resolve();
+                    return;
+                }
+
+                image.addEventListener('load', resolve, { once: true });
+                image.addEventListener('error', () => reject(new Error('A rover texture could not be loaded.')), { once: true });
+            })));
+        }
+
+        async function loadRover() {
+            try {
+                if (!('DecompressionStream' in window)) {
+                    throw new Error('This browser does not support compressed model loading.');
+                }
+
+                const objectPromise = fetch(`${roverBasePath}rover-preview.obj.gz`).then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`Rover file request failed with status ${response.status}.`);
+                    }
+                    return new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).text();
+                });
+
+                const [objectText, materials] = await Promise.all([objectPromise, loadRoverMaterials()]);
+                materials.preload();
+                const objectLoader = new THREE.OBJLoader();
+                objectLoader.setMaterials(materials);
+                const model = objectLoader.parse(objectText);
+                document.getElementById('rover-status').textContent = 'Loading rover textures…';
+                await waitForRoverTextures(materials);
+                roverViewer.fitModel(model);
+            } catch (error) {
+                roverViewer.showError('Rover', error);
+            }
+        }
+
+        loadWhenVisible(document.getElementById('iss-canvas'), loadIssModel);
+        loadWhenVisible(document.querySelector('.rover-viewer'), loadRover);
+
+        const NYMPHA_BRIEFING_URL = 'nympha-briefing.html';
+        const launchButton = document.getElementById('launch-nympha');
+        const briefingMessage = document.getElementById('briefing-message');
+
+        launchButton.addEventListener('click', () => {
+            if (NYMPHA_BRIEFING_URL.trim()) {
+                window.location.assign(NYMPHA_BRIEFING_URL);
+                return;
+            }
+
+            briefingMessage.textContent = 'Mission briefing coming next.';
+        });
+
+        const soundtrack = document.getElementById('archive-soundtrack');
+        const soundtrackToggle = document.getElementById('soundtrack-toggle');
+        const soundtrackIcon = document.getElementById('soundtrack-icon');
+
+        function updateSoundtrackControl(isPlaying) {
+            soundtrackToggle.setAttribute('aria-pressed', String(isPlaying));
+            soundtrackToggle.setAttribute('aria-label', isPlaying ? 'Turn soundtrack off' : 'Play soundtrack');
+            soundtrackToggle.title = isPlaying ? 'Turn soundtrack off' : 'Play soundtrack';
+            soundtrackIcon.textContent = isPlaying ? '♫' : '♪';
+        }
+
+        soundtrackToggle.addEventListener('click', () => {
+            if (soundtrack.paused) {
+                soundtrack.play().catch((error) => {
+                    console.error('Unable to play the soundtrack.', error);
+                });
+            } else {
+                soundtrack.pause();
+            }
+        });
+
+        soundtrack.addEventListener('play', () => updateSoundtrackControl(true));
+        soundtrack.addEventListener('pause', () => updateSoundtrackControl(false));
+        soundtrack.addEventListener('error', () => {
+            console.error('Unable to load the soundtrack file.');
+        });
+        });
+    </script>
+</body>
+</html>

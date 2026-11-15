@@ -1,0 +1,22 @@
+# Environment secrets
+.env*
+!.env.example
+
+# Dependencies and generated builds
+**/node_modules/
+**/.next/
+**/out/
+**/build/
+*.tsbuildinfo
+
+# Local Python environments and caches
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Local databases and encrypted/decrypted backups
+**/*.sqlite3*
+*.halo.enc.json
+*.decrypted.json

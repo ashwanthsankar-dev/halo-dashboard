@@ -1,0 +1,11 @@
+{
+  "mission": "NYMPHA",
+  "mission_day": 247,
+  "crew_member": "Yuki Tanaka",
+  "scenario": "Fictional research-prototype scenario. The briefing says Yuki has had a heavy workload and reduced sleep, and her recent attention and working-memory results are below her personal baseline.",
+  "report_status": "No Day 247 report file or numeric assessment scores were present in the project when this context was prepared. Do not invent report details or scores.",
+  "assessment_results": {
+    "attention": "Below personal baseline; no numeric score supplied.",
+    "working_memory": "Below personal baseline; no numeric score supplied."
+  }
+}

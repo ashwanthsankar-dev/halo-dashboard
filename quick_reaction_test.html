@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HALO · NASA C&amp;W Psychomotor Vigilance &amp; Reflex Protocol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #020617;
+      --bg-panel: rgba(15, 23, 42, 0.72);
+      --bg-card: rgba(2, 6, 23, 0.78);
+      --border-subtle: rgba(51, 65, 85, 0.65);
+      --border-cyan: rgba(34, 211, 238, 0.45);
+      --border-amber: rgba(251, 191, 36, 0.85);
+      --border-rose: rgba(251, 113, 133, 0.75);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.14);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251, 191, 36, 0.14);
+      --rose: #fb7185;
+      --rose-dim: rgba(251, 113, 133, 0.14);
+      --emerald: #34d399;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-deep);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(34, 211, 238, 0.08), transparent 38%),
+        radial-gradient(circle at 85% 85%, rgba(14, 165, 233, 0.07), transparent 42%),
+        linear-gradient(rgba(30, 41, 59, 0.25) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Main Glass Console Container */
+    .console-shell {
+      width: 100%;
+      max-width: 920px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      padding: 24px;
+    }
+
+    /* Top Telemetry Header */
+    .telemetry-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .protocol-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      animation: pulseGlow 2s infinite;
+    }
+
+    .status-dot.fault {
+      background: var(--emerald);
+      box-shadow: 0 0 12px var(--emerald);
+      animation: pulseFast 0.45s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.88); }
+    }
+
+    @keyframes pulseFast {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    .protocol-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-top: 6px;
+      color: var(--text-primary);
+    }
+
+    .telemetry-badges {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 11px;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .trial-toggle {
+      display: inline-flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 2px;
+    }
+
+    .trial-toggle button {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .trial-toggle button.active {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border: 1px solid var(--border-cyan);
+    }
+
+    .trial-toggle button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Interactive C&W Viewport */
+    .cw-viewport {
+      position: relative;
+      margin-top: 20px;
+      min-height: 290px;
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, rgba(2, 6, 23, 0.92) 0%, rgba(15, 23, 42, 0.85) 100%);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    .cw-viewport.state-monitoring {
+      cursor: pointer;
+      border-color: rgba(34, 211, 238, 0.35);
+    }
+
+    .cw-viewport.state-anomaly {
+      cursor: pointer;
+      border-color: rgba(52, 211, 153, 0.85);
+      background: radial-gradient(circle at center, rgba(16, 185, 129, 0.24) 0%, rgba(6, 36, 26, 0.96) 85%);
+      box-shadow: 0 0 44px rgba(16, 185, 129, 0.3), inset 0 0 30px rgba(16, 185, 129, 0.16);
+    }
+
+    .cw-viewport.state-error {
+      border-color: var(--border-rose);
+      background: radial-gradient(circle at center, rgba(251, 113, 133, 0.15) 0%, rgba(24, 9, 16, 0.94) 85%);
+    }
+
+    #telemetry-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.72;
+    }
+
+    .viewport-overlay {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hud-corners {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .briefing-text {
+      max-width: 520px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .kbd-key {
+      display: inline-block;
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid #475569;
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      padding: 1px 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+
+    .btn-primary {
+      margin-top: 20px;
+      background: var(--cyan);
+      color: #020617;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 0 24px rgba(34, 211, 238, 0.3);
+      transition: transform 0.1s ease, background 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background: #67e8f9;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.85);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      padding: 9px 16px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .standby-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--cyan);
+    }
+
+    .standby-headline {
+      margin-top: 14px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #64748b;
+    }
+
+    .fault-banner {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid var(--emerald);
+      border-radius: 6px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: var(--emerald);
+    }
+
+    .live-timer {
+      margin-top: 12px;
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--emerald);
+      text-shadow: 0 0 24px rgba(16, 185, 129, 0.55);
+    }
+
+    .fault-sub {
+      margin-top: 8px;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #a7f3d0;
+    }
+
+    .json-output-box {
+      margin-top: 14px;
+      width: 100%;
+      max-width: 680px;
+      background: rgba(2, 6, 23, 0.94);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--cyan);
+      max-height: 155px;
+      overflow-y: auto;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-word;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .feedback-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    .feedback-detail {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Summary Grid inside Complete State */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      width: 100%;
+      max-width: 680px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      background: rgba(2, 6, 23, 0.88);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .stat-label {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+
+    .stat-value {
+      margin-top: 5px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    /* Trial History Strip & Footer Controls */
+    .telemetry-footer {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .trial-chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+    }
+
+    .chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 5px 10px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-num {
+      color: var(--text-muted);
+    }
+
+    .chip-nominal { color: var(--cyan); font-weight: 600; }
+    .chip-lapse { color: var(--amber); font-weight: 600; }
+    .chip-err { color: var(--rose); font-weight: 600; }
+
+    /* Toast Notification */
+    .toast-banner {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid var(--border-cyan);
+      color: var(--text-primary);
+      padding: 11px 16px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: all 0.2s ease;
+      z-index: 50;
+    }
+
+    .toast-banner.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 600px) {
+      .console-shell { padding: 16px; }
+      .live-timer { font-size: 2.35rem; }
+      .standby-headline { font-size: 1.15rem; }
+    }
+  </style>
+  <script src="mission-soundtrack.js" defer></script>
+</head>
+<body>
+
+  <main class="console-shell" aria-label="Reflex Speed Test">
+    <!-- Telemetry Header -->
+    <header class="telemetry-header">
+      <div>
+        <div class="protocol-kicker">
+          <span id="bus-dot" class="status-dot"></span>
+          <span id="bus-status-text">SYSTEM READY · REFLEX TEST</span>
+        </div>
+        <h1 class="protocol-title">Quick Reaction Test</h1>
+      </div>
+
+      <div class="telemetry-badges">
+        <div class="badge mono" title="Random Wait Time">
+          WAIT TIME: <strong>1.5s–4.5s</strong>
+        </div>
+        <div class="badge mono" id="trial-counter-badge">
+          ROUND: <strong>0 / 6</strong>
+        </div>
+        <div class="trial-toggle" role="group" aria-label="Select round count">
+          <button type="button" id="btn-trials-6" class="active" data-trials="6">6 Rounds</button>
+          <button type="button" id="btn-trials-10" data-trials="10">10 Rounds</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Interactive C&W Fault Acknowledgment Viewport -->
+    <section id="cw-viewport" class="cw-viewport" tabindex="0" role="button" aria-label="Reaction Test Panel">
+      <div class="hud-corners mono">
+        <span>HALO // REACTION CHECK</span>
+        <span id="hud-clock-sync">TIMER: READY</span>
+      </div>
+
+      <canvas id="telemetry-canvas"></canvas>
+
+      <div id="viewport-overlay" class="viewport-overlay">
+        <p class="briefing-text">
+          Watch the screen and wait. As soon as it turns
+          <strong class="mono" style="color: var(--emerald);">GREEN · GO NOW!</strong>,
+          press <span class="kbd-key">SPACE</span> or tap inside this box as fast as you can.
+        </p>
+        <p class="mono" style="font-size: 11.5px; color: var(--text-muted); margin-top: 10px;">
+          &lt;250ms: EXCELLENT · 250–350ms: GOOD · 350–500ms: SLOW · &gt;500ms: VERY SLOW
+        </p>
+        <button type="button" id="btn-start-protocol" class="btn-primary">
+          Start Test (6 Rounds)
+        </button>
+      </div>
+    </section>
+
+    <!-- Trial-by-Trial Telemetry History & Export Controls -->
+    <footer class="telemetry-footer">
+      <div id="trial-chips" class="trial-chips mono" aria-live="polite">
+        <span style="font-size: 11.5px; color: var(--text-muted);">Waiting to start...</span>
+      </div>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" id="btn-export-json" class="btn-secondary mono" title="Download your results as a JSON file">
+          Download JSON
+        </button>
+      </div>
+    </footer>
+  </main>
+
+  <div id="toast-banner" class="toast-banner mono" role="status"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      /* =====================================================================
+       * 1. PROTOCOL CONFIGURATION & PERSISTENCE KEYS
+       * ===================================================================== */
+      const STORAGE_KEY = "halo_cw_pvt_sessions_v1";
+      const LAPSE_THRESHOLD_MS = 500; // Standard NASA Psychomotor Vigilance Task cutoff
+      const MIN_ISI_MS = 1500;
+      const MAX_ISI_MS = 4500;
+
+      const state = {
+        totalTrials: 6,
+        phase: "idle", // idle | monitoring | anomaly | feedback | complete
+        currentTrial: 0,
+        trials: [],
+        stimulusStartPerf: 0,
+        currentIsiMs: 0,
+        isiTimerId: null,
+        feedbackTimerId: null,
+        timerRafId: null,
+        lastSessionSummary: null
+      };
+
+      /* =====================================================================
+       * 2. DOM REFERENCES
+       * ===================================================================== */
+      const viewportEl = document.getElementById("cw-viewport");
+      const overlayEl = document.getElementById("viewport-overlay");
+      const busDotEl = document.getElementById("bus-dot");
+      const busStatusEl = document.getElementById("bus-status-text");
+      const trialCounterEl = document.getElementById("trial-counter-badge");
+      const trialChipsEl = document.getElementById("trial-chips");
+      const btnTrials6 = document.getElementById("btn-trials-6");
+      const btnTrials10 = document.getElementById("btn-trials-10");
+      const btnExportJson = document.getElementById("btn-export-json");
+      const toastEl = document.getElementById("toast-banner");
+      const canvas = document.getElementById("telemetry-canvas");
+      const ctx = canvas.getContext("2d");
+
+      /* =====================================================================
+       * 3. LIVE TELEMETRY WAVEFORM CANVAS (OSCILLOSCOPE BUS MONITOR)
+       * ===================================================================== */
+      let wavePhase = 0;
+
+      function resizeCanvas() {
+        const rect = viewportEl.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function renderWaveformLoop() {
+        const rect = viewportEl.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const isFault = state.phase === "anomaly";
+        const isError = state.phase === "feedback" && state.trials.length &&
+          state.trials[state.trials.length - 1].status === "false_start";
+
+        const strokeColor = isFault
+          ? "rgba(52, 211, 153, 0.82)"
+          : isError
+          ? "rgba(251, 113, 133, 0.55)"
+          : "rgba(34, 211, 238, 0.35)";
+
+        const midY = height * 0.5;
+        const amplitude = isFault ? 34 : state.phase === "monitoring" ? 14 : 8;
+        const frequency = isFault ? 0.055 : 0.022;
+        wavePhase += isFault ? 0.24 : 0.06;
+
+        // Subtle horizontal baseline
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(100, 116, 139, 0.16)";
+        ctx.lineWidth = 1;
+        ctx.moveTo(0, midY);
+        ctx.lineTo(width, midY);
+        ctx.stroke();
+
+        // Oscillating telemetry signal trace
+        ctx.beginPath();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = isFault ? 2.2 : 1.5;
+
+        for (let x = 0; x <= width; x += 3) {
+          const envelope = Math.sin((x / width) * Math.PI);
+          const harmonic = isFault
+            ? Math.sin(x * frequency * 2.3 - wavePhase * 1.7) * 0.45
+            : Math.sin(x * frequency * 0.5 + wavePhase * 0.4) * 0.25;
+          const y = midY + (Math.sin(x * frequency + wavePhase) + harmonic) * amplitude * envelope;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        requestAnimationFrame(renderWaveformLoop);
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      requestAnimationFrame(renderWaveformLoop);
+
+      /* =====================================================================
+       * 4. UTILITY HELPERS & STORAGE PERSISTENCE
+       * ===================================================================== */
+      function showToast(message) {
+        toastEl.textContent = message;
+        toastEl.classList.add("visible");
+        clearTimeout(showToast._tid);
+        showToast._tid = setTimeout(() => {
+          toastEl.classList.remove("visible");
+        }, 2800);
+      }
+
+      function loadSavedSessions() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (err) {
+          return [];
+        }
+      }
+
+      function saveSessionToStorage(summary) {
+        try {
+          const sessions = loadSavedSessions();
+          sessions.unshift(summary);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.slice(0, 50)));
+        } catch (err) {
+          console.warn("Unable to persist session to localStorage:", err);
+        }
+      }
+
+      function clearAllTimers() {
+        if (state.isiTimerId) clearTimeout(state.isiTimerId);
+        if (state.feedbackTimerId) clearTimeout(state.feedbackTimerId);
+        if (state.timerRafId) cancelAnimationFrame(state.timerRafId);
+        state.isiTimerId = null;
+        state.feedbackTimerId = null;
+        state.timerRafId = null;
+      }
+
+      function updateHeaderHud() {
+        const displayTrial = state.phase === "idle" ? 0 : state.currentTrial;
+        trialCounterEl.innerHTML = `ROUND: <strong>${displayTrial} / ${state.totalTrials}</strong>`;
+
+        const isRunning = state.phase === "monitoring" || state.phase === "anomaly" || state.phase === "feedback";
+        btnTrials6.disabled = isRunning;
+        btnTrials10.disabled = isRunning;
+
+        if (state.phase === "anomaly") {
+          busDotEl.classList.add("fault");
+          busStatusEl.textContent = "GREEN SIGNAL · TAP NOW!";
+          busStatusEl.style.color = "var(--emerald)";
+        } else if (state.phase === "monitoring") {
+          busDotEl.classList.remove("fault");
+          busStatusEl.textContent = "WAITING · GET READY";
+          busStatusEl.style.color = "var(--cyan)";
+        } else {
+          busDotEl.classList.remove("fault");
+          busStatusEl.textContent = "SYSTEM READY · REFLEX TEST";
+          busStatusEl.style.color = "var(--cyan)";
+        }
+      }
+
+      function renderTrialChips() {
+        if (!state.trials.length) {
+          trialChipsEl.innerHTML = `<span style="font-size: 11.5px; color: var(--text-muted);">Waiting to start...</span>`;
+          return;
+        }
+
+        trialChipsEl.innerHTML = state.trials.map((t) => {
+          if (t.status === "false_start") {
+            return `<span class="chip" title="Pressed too early">
+              <span class="chip-num">#${t.trialNumber}</span>
+              <span class="chip-err">TOO EARLY</span>
+            </span>`;
+          }
+          const cls = t.rating === "Excellent" || t.rating === "Good" ? "chip-nominal" : t.rating === "Slow" ? "chip-lapse" : "chip-err";
+          return `<span class="chip" title="Wait time: ${t.isiMs}ms · ${t.rating}">
+            <span class="chip-num">#${t.trialNumber}</span>
+            <span class="${cls}">${t.reactionTimeMs}ms (${t.rating})</span>
+          </span>`;
+        }).join("");
+      }
+
+      function getSpeedRating(rtMs) {
+        if (rtMs <= 250) {
+          return { label: "Excellent", color: "var(--emerald)", detail: "Super fast reaction under 250 ms!" };
+        }
+        if (rtMs <= 350) {
+          return { label: "Good", color: "var(--cyan)", detail: "Solid reaction speed (250–350 ms)." };
+        }
+        if (rtMs <= 500) {
+          return { label: "Slow", color: "var(--amber)", detail: "A bit slow (350–500 ms). Stay sharp!" };
+        }
+        return { label: "Very Slow", color: "var(--rose)", detail: "Over 500 ms. Try to tap faster next round." };
+      }
+
+      /* =====================================================================
+       * 5. CORE PSYCHOMOTOR VIGILANCE STATE MACHINE
+       * ===================================================================== */
+      function updateLiveFaultTimer() {
+        if (state.phase !== "anomaly") return;
+        const elapsedMs = Math.round(performance.now() - state.stimulusStartPerf);
+        const timerNode = document.getElementById("live-fault-ms");
+        if (timerNode) {
+          timerNode.textContent = `${String(elapsedMs).padStart(3, "0")} ms`;
+        }
+        state.timerRafId = requestAnimationFrame(updateLiveFaultTimer);
+      }
+
+      function beginTrial(trialNumber) {
+        clearAllTimers();
+        state.phase = "monitoring";
+        state.currentTrial = trialNumber;
+        updateHeaderHud();
+
+        viewportEl.className = "cw-viewport state-monitoring";
+        overlayEl.innerHTML = `
+          <div class="standby-pill mono">
+            <span class="status-dot"></span>
+            WATCH THE SCREEN
+          </div>
+          <div class="standby-headline mono">WAIT FOR GREEN...</div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
+            Do not press yet. Wait until it turns green.
+          </p>
+        `;
+
+        // Randomized Inter-Stimulus Interval (1500 ms to 4500 ms)
+        state.currentIsiMs = Math.floor(MIN_ISI_MS + Math.random() * (MAX_ISI_MS - MIN_ISI_MS));
+
+        state.isiTimerId = setTimeout(() => {
+          state.stimulusStartPerf = performance.now();
+          state.phase = "anomaly";
+          updateHeaderHud();
+
+          viewportEl.className = "cw-viewport state-anomaly";
+          overlayEl.innerHTML = `
+            <div class="fault-banner mono">GREEN SIGNAL · GO NOW!</div>
+            <div id="live-fault-ms" class="live-timer mono">000 ms</div>
+            <div class="fault-sub mono">Press SPACE or Tap Box Now</div>
+          `;
+
+          state.timerRafId = requestAnimationFrame(updateLiveFaultTimer);
+        }, state.currentIsiMs);
+      }
+
+      function computeSummaryAnalytics(trialsList) {
+        const validRts = trialsList
+          .filter((t) => t.reactionTimeMs !== null)
+          .map((t) => t.reactionTimeMs)
+          .sort((a, b) => a - b);
+
+        const meanRtMs = validRts.length
+          ? Math.round(validRts.reduce((sum, val) => sum + val, 0) / validRts.length)
+          : null;
+
+        let medianRtMs = null;
+        if (validRts.length) {
+          const mid = Math.floor(validRts.length / 2);
+          medianRtMs = validRts.length % 2 !== 0
+            ? validRts[mid]
+            : Math.round((validRts[mid - 1] + validRts[mid]) / 2);
+        }
+
+        const fastestRtMs = validRts.length ? validRts[0] : null;
+        const verySlowCount = trialsList.filter((t) => t.rating === "Very Slow").length;
+        const slowCount = trialsList.filter((t) => t.rating === "Slow").length;
+        const goodCount = trialsList.filter((t) => t.rating === "Good").length;
+        const excellentCount = trialsList.filter((t) => t.rating === "Excellent").length;
+        const falseStarts = trialsList.filter((t) => t.status === "false_start").length;
+
+        const overallRating = meanRtMs !== null ? getSpeedRating(meanRtMs).label : "No Valid Taps";
+
+        // Composite Score (0–100) penalizing slow RT, very slow taps, and too-early taps
+        let finalScore = 0;
+        if (validRts.length > 0 && meanRtMs !== null) {
+          const speedComponent = Math.max(0, Math.min(100, 100 - Math.max(0, meanRtMs - 180) * 0.22));
+          const penalty = verySlowCount * 12 + slowCount * 4 + falseStarts * 15;
+          finalScore = Math.max(0, Math.min(100, Math.round(speedComponent - penalty)));
+        }
+
+        return {
+          sessionId: `PVT-${Date.now().toString(36).toUpperCase()}`,
+          protocol: "Quick Reaction Test",
+          overallRating,
+          finalScore,
+          totalRounds: state.totalTrials,
+          excellentCount,
+          goodCount,
+          slowCount,
+          verySlowCount,
+          tooEarlyCount: falseStarts,
+          averageTimeMs: meanRtMs,
+          middleTimeMs: medianRtMs,
+          fastestTimeMs: fastestRtMs,
+          rounds: trialsList,
+          completedAt: new Date().toISOString()
+        };
+      }
+
+      function finalizeProtocol() {
+        clearAllTimers();
+        state.phase = "complete";
+        updateHeaderHud();
+
+        const summary = computeSummaryAnalytics(state.trials);
+        state.lastSessionSummary = summary;
+        saveSessionToStorage(summary);
+
+        const formattedJson = JSON.stringify(summary, null, 2);
+        const ratingStyle = summary.averageTimeMs !== null
+          ? getSpeedRating(summary.averageTimeMs).color
+          : "var(--rose)";
+
+        viewportEl.className = "cw-viewport";
+        overlayEl.innerHTML = `
+          <div class="standby-pill mono" style="border-color: rgba(52, 211, 153, 0.45); color: var(--emerald);">
+            TEST FINISHED · SAVED (${summary.sessionId})
+          </div>
+
+          <div class="summary-grid">
+            <div class="stat-card" style="border-color: var(--border-cyan);">
+              <div class="stat-label">Final Score</div>
+              <div class="stat-value mono" style="color: var(--emerald);">${summary.finalScore} / 100</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Overall Rating</div>
+              <div class="stat-value mono" style="color: ${ratingStyle};">${summary.overallRating}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Average Time</div>
+              <div class="stat-value mono">${summary.averageTimeMs !== null ? summary.averageTimeMs + " ms" : "N/A"}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Fastest Time</div>
+              <div class="stat-value mono">${summary.fastestTimeMs !== null ? summary.fastestTimeMs + " ms" : "N/A"}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Too Early</div>
+              <div class="stat-value mono" style="color: ${summary.tooEarlyCount > 0 ? "var(--rose)" : "var(--text-primary)"};">${summary.tooEarlyCount}</div>
+            </div>
+          </div>
+
+          <pre id="inline-json-output" class="json-output-box">${formattedJson}</pre>
+
+          <div class="action-row">
+            <button type="button" id="btn-copy-json" class="btn-secondary mono">
+              Copy JSON
+            </button>
+            <button type="button" id="btn-rerun-protocol" class="btn-primary" style="margin-top: 0;">
+              Play Again (${state.totalTrials} Rounds)
+            </button>
+          </div>
+        `;
+
+        document.getElementById("btn-copy-json").addEventListener("click", (e) => {
+          e.stopPropagation();
+          const tempArea = document.createElement("textarea");
+          tempArea.value = formattedJson;
+          document.body.appendChild(tempArea);
+          tempArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(tempArea);
+          showToast("JSON copied!");
+        });
+
+        document.getElementById("btn-rerun-protocol").addEventListener("click", (e) => {
+          e.stopPropagation();
+          startProtocol();
+        });
+
+        showToast(`Test done! Rating: ${summary.overallRating} (${summary.finalScore}/100)`);
+      }
+
+      function handleAcknowledgmentInput() {
+        if (state.phase !== "monitoring" && state.phase !== "anomaly") return;
+
+        const inputPerf = performance.now();
+        clearAllTimers();
+
+        if (state.phase === "monitoring") {
+          // Premature commission error before green signal
+          const record = {
+            trialNumber: state.currentTrial,
+            isiMs: state.currentIsiMs,
+            reactionTimeMs: null,
+            rating: "Too Early",
+            status: "false_start",
+            recordedAt: new Date().toISOString()
+          };
+          state.trials.push(record);
+          state.phase = "feedback";
+          updateHeaderHud();
+          renderTrialChips();
+
+          viewportEl.className = "cw-viewport state-error";
+          overlayEl.innerHTML = `
+            <div class="feedback-title mono" style="color: var(--rose);">
+              TOO EARLY!
+            </div>
+            <div class="feedback-detail">
+              You pressed before the screen turned green. Wait for the green signal.
+            </div>
+          `;
+        } else if (state.phase === "anomaly") {
+          const rtMs = Math.round(inputPerf - state.stimulusStartPerf);
+          const speedInfo = getSpeedRating(rtMs);
+          const isLapse = rtMs > LAPSE_THRESHOLD_MS;
+
+          const record = {
+            trialNumber: state.currentTrial,
+            isiMs: state.currentIsiMs,
+            reactionTimeMs: rtMs,
+            rating: speedInfo.label,
+            status: isLapse ? "very_slow" : "nominal",
+            recordedAt: new Date().toISOString()
+          };
+          state.trials.push(record);
+          state.phase = "feedback";
+          updateHeaderHud();
+          renderTrialChips();
+
+          viewportEl.className = "cw-viewport";
+          overlayEl.innerHTML = `
+            <div class="feedback-title mono" style="color: ${speedInfo.color};">
+              ${speedInfo.label.toUpperCase()}! · ${rtMs} ms
+            </div>
+            <div class="feedback-detail">
+              ${speedInfo.detail}
+            </div>
+          `;
+        }
+
+        state.feedbackTimerId = setTimeout(() => {
+          if (state.currentTrial >= state.totalTrials) {
+            finalizeProtocol();
+          } else {
+            beginTrial(state.currentTrial + 1);
+          }
+        }, 1150);
+      }
+
+      function startProtocol() {
+        state.trials = [];
+        state.lastSessionSummary = null;
+        renderTrialChips();
+        beginTrial(1);
+      }
+
+      /* =====================================================================
+       * 6. EVENT BINDINGS (LOW-LATENCY MOUSE/TOUCH, KEYBOARD, CONFIG, EXPORT)
+       * ===================================================================== */
+      document.getElementById("btn-start-protocol").addEventListener("click", (e) => {
+        e.stopPropagation();
+        startProtocol();
+      });
+
+      // Use pointerdown for zero-latency mouse & touch input without double firing
+      viewportEl.addEventListener("pointerdown", (e) => {
+        if (e.target.closest("button") || e.target.closest(".json-output-box")) return;
+        if (state.phase === "monitoring" || state.phase === "anomaly") {
+          e.preventDefault();
+          handleAcknowledgmentInput();
+        }
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          if (state.phase === "monitoring" || state.phase === "anomaly") {
+            e.preventDefault();
+            handleAcknowledgmentInput();
+          }
+        }
+      });
+
+      function setTrialCount(count) {
+        if (state.phase === "monitoring" || state.phase === "anomaly" || state.phase === "feedback") return;
+        state.totalTrials = count;
+        btnTrials6.classList.toggle("active", count === 6);
+        btnTrials10.classList.toggle("active", count === 10);
+        updateHeaderHud();
+
+        const startBtn = document.getElementById("btn-start-protocol");
+        if (startBtn) {
+          startBtn.textContent = `Start Test (${count} Rounds)`;
+        }
+        const rerunBtn = document.getElementById("btn-rerun-protocol");
+        if (rerunBtn) {
+          rerunBtn.textContent = `Play Again (${count} Rounds)`;
+        }
+      }
+
+      btnTrials6.addEventListener("click", () => setTrialCount(6));
+      btnTrials10.addEventListener("click", () => setTrialCount(10));
+
+      btnExportJson.addEventListener("click", () => {
+        const savedSessions = loadSavedSessions();
+        const exportPayload = {
+          exportedAt: new Date().toISOString(),
+          system: "HALO AI · NASA Space Apps Cognitive Telemetry",
+          latestSession: state.lastSessionSummary || savedSessions[0] || null,
+          archivedSessionsCount: savedSessions.length,
+          archivedSessions: savedSessions
+        };
+
+        if (!exportPayload.latestSession && savedSessions.length === 0) {
+          showToast("Finish a test first to download JSON.");
+          return;
+        }
+
+        const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `halo-pvt-telemetry-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast("JSON file downloaded!");
+      });
+
+      // Initialize HUD state on load
+      updateHeaderHud();
+    })();
+  </script>
+</body>
+</html>

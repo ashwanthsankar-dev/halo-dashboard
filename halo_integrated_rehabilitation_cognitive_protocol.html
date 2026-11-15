@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HALO · Cognitive Practice &amp; Mission Protocol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #040b19;
+      --bg-panel: rgba(5, 15, 32, 0.88);
+      --bg-card: rgba(8, 24, 46, 0.88);
+      --border-subtle: rgba(139, 190, 230, 0.25);
+      --border-cyan: rgba(77, 205, 255, 0.5);
+      --text-primary: #edf7ff;
+      --text-secondary: #b5c9dc;
+      --text-muted: #8299ae;
+      --cyan: #5acbff;
+      --amber: #ffc66d;
+      --rose: #ff8291;
+      --emerald: #5ee0ae;
+      --indigo: #67bfff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-deep);
+      background-image:
+        linear-gradient(rgba(3, 10, 25, 0.38), rgba(3, 10, 25, 0.58)),
+        url('./halo-earth-background.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    .console-shell {
+      width: 100%;
+      max-width: 960px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      padding: 24px;
+    }
+
+    .telemetry-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .protocol-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--indigo);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--indigo);
+      box-shadow: 0 0 8px rgba(79, 70, 229, 0.4);
+    }
+
+    .protocol-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 4px;
+      color: var(--text-primary);
+    }
+
+    .telemetry-badges {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .badge strong { color: var(--text-primary); font-weight: 600; }
+
+    .module-container {
+      position: relative;
+      margin-top: 20px;
+      min-height: 440px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(5, 15, 32, 0.84);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .btn-primary {
+      margin-top: 22px;
+      background: var(--indigo);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 26px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(57, 169, 236, 0.25);
+      transition: transform 0.1s ease, background 0.15s ease;
+    }
+    .btn-primary:hover { background: #429fdc; transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: rgba(11, 29, 52, 0.92);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .btn-secondary:hover { border-color: var(--indigo); color: var(--indigo); }
+
+    .dilemma-card {
+      width: 100%;
+      max-width: 760px;
+      text-align: left;
+      background: rgba(7, 18, 38, 0.92);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+
+    .dilemma-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .option-btn {
+      background: rgba(13, 30, 52, 0.92);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 13px 16px;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.5;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .option-btn:hover {
+      border-color: var(--indigo);
+      background: rgba(64, 173, 235, 0.1);
+      color: var(--indigo);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      width: 100%;
+      max-width: 740px;
+      margin-top: 16px;
+      text-align: left;
+    }
+
+    .stat-card {
+      background: rgba(9, 24, 44, 0.9);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); }
+    .stat-value { margin-top: 4px; font-size: 1.15rem; font-weight: 600; color: var(--text-primary); }
+
+    .json-output-box {
+      margin-top: 16px;
+      width: 100%;
+      max-width: 740px;
+      background: #0f172a;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #38bdf8;
+      max-height: 160px;
+      overflow-y: auto;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .telemetry-footer {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #0f172a;
+      border: 1px solid var(--border-cyan);
+      color: #f8fafc;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      z-index: 50;
+      pointer-events: none;
+    }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    .game-library {
+      width: 100%;
+      max-width: 760px;
+      margin-top: 24px;
+      text-align: left;
+    }
+
+    .game-library h3 {
+      margin-bottom: 10px;
+      color: var(--text-secondary);
+      font: 600 11px 'JetBrains Mono', monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .game-library-grid,
+    .skill-results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .game-link-card {
+      display: grid;
+      gap: 5px;
+      padding: 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      background: rgba(5, 17, 36, 0.84);
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: border-color 150ms ease, transform 150ms ease;
+    }
+
+    .game-link-card:hover,
+    .game-link-card.recommended {
+      transform: translateY(-1px);
+      border-color: var(--cyan);
+    }
+
+    .game-link-card strong { font-size: 12px; }
+    .game-link-card span { color: var(--text-secondary); font-size: 10px; line-height: 1.45; }
+    .practice-note { max-width: 740px; margin-top: 14px; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+    .skill-results { width: 100%; max-width: 740px; margin-top: 16px; text-align: left; }
+    .skill-result small { display: block; margin-top: 5px; color: var(--text-secondary); font-size: 9px; }
+    .practice-recommendation { display: grid; gap: 8px; width: 100%; max-width: 740px; margin-top: 16px; padding: 14px; border: 1px solid var(--border-cyan); border-radius: 10px; background: rgba(8, 29, 49, 0.78); text-align: left; }
+    .practice-recommendation p { color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
+    .practice-recommendation .game-link-card { max-width: 360px; }
+
+    .assistant-panel {
+      width: 100%;
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      background: rgba(5, 15, 32, 0.9);
+      color: var(--text-primary);
+    }
+
+    .assistant-panel h2 { font-size: 1rem; }
+    .assistant-disclosure,.assistant-status { margin-top: 8px; color: var(--text-secondary); font-size: 10px; line-height: 1.5; }
+
+    .assistant-log {
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: rgba(2, 8, 20, 0.62);
+    }
+
+    .assistant-message { max-width: 90%; padding: 9px 11px; border-radius: 9px; font-size: 11px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .assistant-message.user { justify-self: end; background: rgba(20, 87, 133, 0.55); }
+    .assistant-message.assistant { justify-self: start; background: rgba(21, 43, 69, 0.86); }
+    .assistant-form { display: flex; gap: 8px; margin-top: 10px; }
+    .assistant-form textarea {
+      flex: 1;
+      min-height: 42px;
+      max-height: 120px;
+      resize: vertical;
+      padding: 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: rgba(2, 8, 20, 0.78);
+      color: var(--text-primary);
+      font: inherit;
+      font-size: 11px;
+    }
+    .assistant-form textarea:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+    .assistant-form .btn-primary { flex: 0 0 auto; margin: 0; }
+    .assistant-status[role="alert"] { color: #ffb1ba; }
+
+    @media (max-width: 600px) {
+      .console-shell { padding: 16px; }
+      .module-container { padding: 16px; }
+      .assistant-panel { padding: 14px; }
+      .assistant-form { flex-direction: column; }
+      .assistant-form .btn-primary { width: 100%; }
+    }
+  </style>
+  <script src="mission-soundtrack.js" defer></script>
+</head>
+<body>
+
+  <main class="console-shell">
+    <header class="telemetry-header">
+      <div>
+        <div class="protocol-kicker">
+          <span class="status-dot"></span>
+          <span id="protocol-status">STAGE 1 · GAME-BASED PRACTICE SIGNALS</span>
+        </div>
+        <h1 class="protocol-title">HALO Cognitive Practice &amp; Mission Protocol</h1>
+      </div>
+      <div class="telemetry-badges">
+        <div class="badge mono">PHASE: <strong id="hud-phase">GAME SIMULATION</strong></div>
+        <div class="badge mono">INTEGRITY SCORE: <strong id="hud-score">100</strong></div>
+      </div>
+    </header>
+
+    <div class="module-container" id="module-viewport">
+      <h2 class="mono" style="font-size: 1.25rem; font-weight: 600; color: var(--indigo); letter-spacing: 0.05em;">MULTI-DOMAIN PRACTICE SIMULATION</h2>
+      <p style="max-width: 540px; font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); margin-top: 12px;">
+        This short game samples catch accuracy, visual-response speed, and attention, then suggests an optional follow-up game. These are experimental game signals, not a diagnosis or clinical assessment. You can then complete 5 randomized mission scenarios.
+      </p>
+      <button type="button" id="btn-start-game" class="btn-primary">Launch Rehabilitation Game</button>
+      <div class="game-library" aria-label="Optional cognitive practice games">
+        <h3>Optional practice games</h3>
+        <div class="game-library-grid">
+          <a class="game-link-card" data-game="quick_reaction_test.html" href="./quick_reaction_test.html" target="_blank" rel="noopener noreferrer"><strong>Quick Reaction Test</strong><span>Visual response speed and sustained attention</span></a>
+          <a class="game-link-card" data-game="orbital_supply_catch.html" href="./orbital_supply_catch.html" target="_blank" rel="noopener noreferrer"><strong>Orbital Supply Catch</strong><span>Catch accuracy, tracking, and hand-eye coordination</span></a>
+          <a class="game-link-card" data-game="dual_task_docking.html" href="./dual_task_docking.html" target="_blank" rel="noopener noreferrer"><strong>Dual-Task Docking</strong><span>Steady control while monitoring a second signal</span></a>
+        </div>
+      </div>
+    </div>
+
+    <section class="assistant-panel" aria-labelledby="yuki-title">
+      <h2 id="yuki-title">Yuki AI assistant</h2>
+      <p class="assistant-disclosure">Only the text you send and recent chat messages are sent to the HALO server. Game scores stay in this browser unless you include them. AI requires the same-origin HALO API and server-side <code>GROQ_API_KEY</code>; no key is stored in this page.</p>
+      <div class="assistant-log" id="assistant-log" role="log" aria-live="polite" aria-relevant="additions text">
+        <p class="assistant-message assistant">Hi, I’m Yuki. I can answer general mission and game questions. I don’t diagnose or interpret game performance as a health condition.</p>
+      </div>
+      <form class="assistant-form" id="assistant-form">
+        <label class="visually-hidden" for="assistant-input">Message Yuki</label>
+        <textarea id="assistant-input" maxlength="2000" rows="2" placeholder="Ask Yuki a mission question…" required></textarea>
+        <button type="submit" class="btn-primary" id="assistant-send">Send</button>
+      </form>
+      <p class="assistant-status" id="assistant-status" role="status">Serve this page through HALO to use Yuki. Groq replies require server-side GROQ_API_KEY; no key is stored in this page.</p>
+    </section>
+
+    <footer class="telemetry-footer">
+      <div class="mono" style="font-size: 11px; color: var(--text-secondary);" id="footer-info">
+        Status: Awaiting protocol initialization
+      </div>
+      <button type="button" id="btn-export" class="btn-secondary mono">Secure Telemetry (JSON)</button>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast mono"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const viewport = document.getElementById("module-viewport");
+      const hudPhase = document.getElementById("hud-phase");
+      const hudScore = document.getElementById("hud-score");
+      const protocolStatus = document.getElementById("protocol-status");
+      const footerInfo = document.getElementById("footer-info");
+      const toastEl = document.getElementById("toast");
+      const btnExport = document.getElementById("btn-export");
+
+      let telemetryData = {
+        sessionId: `CLIN-${Date.now().toString(36).toUpperCase()}`,
+        protocolName: "HALO Game-Based Cognitive Practice & Mission Protocol",
+        integrityScore: 100,
+        gameResult: null,
+        dilemmaResponses: [],
+        completedAt: null,
+        integratedResult: null
+      };
+
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("visible");
+        clearTimeout(showToast._tid);
+        showToast._tid = setTimeout(() => toastEl.classList.remove("visible"), 2500);
+      }
+
+      function gameHref(filename) {
+        return window.location.protocol === "file:" ? `./${filename}` : `/games/${filename}`;
+      }
+
+      document.querySelectorAll("[data-game]").forEach((link) => {
+        link.href = gameHref(link.dataset.game);
+      });
+
+      const practiceGames = {
+        precision: { name: "Orbital Supply Catch", href: gameHref("orbital_supply_catch.html") },
+        reflex: { name: "Quick Reaction Test", href: gameHref("quick_reaction_test.html") },
+        attention: { name: "Dual-Task Docking", href: gameHref("dual_task_docking.html") }
+      };
+
+      function assessGamePerformance({ crateAttempts, caughtCrates, reactionTimes, flashesShown, flashHits }) {
+        const precisionPct = crateAttempts ? Math.round((caughtCrates / crateAttempts) * 100) : null;
+        const averageReactionMs = reactionTimes.length
+          ? Math.round(reactionTimes.reduce((total, value) => total + value, 0) / reactionTimes.length)
+          : null;
+        const attentionPct = flashesShown ? Math.round((flashHits / flashesShown) * 100) : null;
+        const signals = [
+          { key: "spatialPrecision", label: "Catch precision", value: precisionPct, unit: "%", attempts: crateAttempts, minimum: 8, threshold: 65, lowIsPractice: true, game: practiceGames.precision },
+          { key: "reflexSpeed", label: "Visual response speed", value: averageReactionMs, unit: " ms avg", attempts: reactionTimes.length, minimum: 3, threshold: 650, lowIsPractice: false, game: practiceGames.reflex },
+          { key: "dividedAttention", label: "Signal attention", value: attentionPct, unit: "%", attempts: flashesShown, minimum: 4, threshold: 65, lowIsPractice: true, game: practiceGames.attention }
+        ].map((signal) => {
+          const enoughData = signal.value !== null && signal.attempts >= signal.minimum;
+          const needsPractice = enoughData && (signal.lowIsPractice
+            ? signal.value < signal.threshold
+            : signal.value > signal.threshold);
+          const gap = !needsPractice ? 0 : (signal.lowIsPractice
+            ? (signal.threshold - signal.value) / signal.threshold
+            : (signal.value - signal.threshold) / signal.threshold);
+          return {
+            key: signal.key,
+            label: signal.label,
+            value: signal.value,
+            display: signal.value === null ? "Not measured" : `${signal.value}${signal.unit}`,
+            attempts: signal.attempts,
+            status: !enoughData ? "More samples needed" : needsPractice ? "Practice suggested" : "No practice flag",
+            needsPractice,
+            gap,
+            game: signal.game
+          };
+        });
+
+        const priority = signals.filter((signal) => signal.needsPractice).sort((a, b) => b.gap - a.gap)[0];
+        const recommendation = priority
+          ? { ...priority.game, focus: priority.label, reason: `This short game showed a lower ${priority.label.toLowerCase()} signal; try a focused practice round.` }
+          : {
+              ...practiceGames.attention,
+              focus: "Mixed practice",
+              reason: signals.some((signal) => signal.status === "More samples needed")
+                ? "There were not enough trials to suggest a specific focus. A mixed practice round is optional."
+                : "No practice signal crossed the prototype thresholds. A mixed practice round is optional."
+            };
+
+        return { precisionPct, averageReactionMs, attentionPct, signals, recommendation };
+      }
+
+      /* =====================================================================
+       * STAGE 1: THE REHABILITATION GAME (Multi-Task Reflex, Motor & Vigilance)
+       * ===================================================================== */
+      function startRehabGame() {
+        hudPhase.textContent = "GAME SIMULATION";
+        protocolStatus.textContent = "ACTIVE REHABILITATION GAME";
+        footerInfo.textContent = "Game active: use pointer or arrows to catch cargo; click or press Space on green signals.";
+
+        viewport.innerHTML = `
+          <div style="position:absolute; top:12px; left:16px; right:16px; display:flex; justify-content:space-between; font-size:11px; color:var(--text-secondary);" class="mono">
+            <span>GAME: CATCH CRATES &amp; REACT TO FLASH</span>
+            <span><span id="game-live-score">SCORE: 0</span> · <span id="game-live-time">25s</span></span>
+          </div>
+          <canvas id="game-canvas" aria-label="Catch falling cargo and respond to green signals" style="width:100%; height:360px; display:block; background:#061326; border-radius:8px; border:1px solid var(--border-subtle); cursor:crosshair;"></canvas>
+        `;
+
+        const canvas = document.getElementById("game-canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = viewport.clientWidth - 48;
+        canvas.height = 360;
+
+        let gameScore = 0;
+        let gameTime = 25; // seconds
+        let crates = [];
+        let spawnedCrates = 0;
+        let crateAttempts = 0;
+        let caughtCrates = 0;
+        let playerX = canvas.width / 2;
+        let flashActive = false;
+        let flashStartTime = 0;
+        let flashTimeout = null;
+        let flashWindowTimeout = null;
+        let flashesShown = 0;
+        let flashHits = 0;
+        let flashMisses = 0;
+        let falseStarts = 0;
+        const reactionTimes = [];
+        let keyLeft = false;
+        let keyRight = false;
+
+        const updateLiveScore = () => {
+          document.getElementById("game-live-score").textContent = `SCORE: ${gameScore}`;
+        };
+
+        const recordFlashResponse = () => {
+          if (!flashActive) return false;
+          const reactionTimeMs = Math.round(performance.now() - flashStartTime);
+          reactionTimes.push(reactionTimeMs);
+          flashHits++;
+          gameScore += 25;
+          flashActive = false;
+          clearTimeout(flashWindowTimeout);
+          updateLiveScore();
+          showToast(`Signal response: ${reactionTimeMs} ms`);
+          return true;
+        };
+
+        const handleKeyDown = (e) => {
+          if (e.target instanceof HTMLElement && e.target.closest("input, textarea, select, button, [contenteditable='true']")) return;
+          if (e.repeat) return;
+          if (e.code === "ArrowLeft" || e.key === "a") keyLeft = true;
+          if (e.code === "ArrowRight" || e.key === "d") keyRight = true;
+          if (e.code === "Space") {
+            e.preventDefault();
+            if (!recordFlashResponse()) falseStarts++;
+          }
+        };
+
+        const handleKeyUp = (e) => {
+          if (e.code === "ArrowLeft" || e.key === "a") keyLeft = false;
+          if (e.code === "ArrowRight" || e.key === "d") keyRight = false;
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
+
+        canvas.addEventListener("pointermove", (e) => {
+          const rect = canvas.getBoundingClientRect();
+          playerX = e.clientX - rect.left;
+        });
+        canvas.addEventListener("pointerdown", () => {
+          if (flashActive) recordFlashResponse();
+        });
+
+        const timerInterval = setInterval(() => {
+          gameTime--;
+          document.getElementById("game-live-time").textContent = `${Math.max(0, gameTime)}s`;
+          if (gameTime <= 0) {
+            clearInterval(timerInterval);
+            clearInterval(spawnInterval);
+            clearTimeout(flashTimeout);
+            clearTimeout(flashWindowTimeout);
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("keyup", handleKeyUp);
+
+            if (flashActive) flashMisses++;
+            flashActive = false;
+            const performance = assessGamePerformance({
+              crateAttempts,
+              caughtCrates,
+              reactionTimes,
+              flashesShown,
+              flashHits
+            });
+            telemetryData.gameResult = {
+              finalScore: gameScore,
+              status: "completed",
+              durationSeconds: 25,
+              crateTrials: { spawned: spawnedCrates, attempts: crateAttempts, caught: caughtCrates },
+              reflex: { responses: reactionTimes.length, averageReactionMs: performance.averageReactionMs, reactionTimesMs: reactionTimes },
+              attention: { signalsShown: flashesShown, signalsCaught: flashHits, signalsMissed: flashMisses, falseStarts },
+              practiceSignals: performance.signals,
+              recommendedGame: performance.recommendation
+            };
+            telemetryData.integrityScore = Math.min(100, telemetryData.integrityScore + Math.round(gameScore * 0.2));
+            hudScore.textContent = telemetryData.integrityScore;
+
+            showToast("Game complete! Starting 5 Dilemma Questions...");
+            setTimeout(startDilemmaQuiz, 1500);
+          }
+        }, 1000);
+
+        const spawnInterval = setInterval(() => {
+          spawnedCrates++;
+          crates.push({
+            x: Math.random() * (canvas.width - 24),
+            y: -30,
+            size: 24,
+            speed: 4.5 + Math.random() * 3.5 // Increased speed
+          });
+        }, 550); // Faster spawn rate
+
+        const triggerFlash = () => {
+          if (gameTime <= 0) return;
+          flashActive = true;
+          flashesShown++;
+          flashStartTime = performance.now();
+          flashWindowTimeout = setTimeout(() => {
+            if (flashActive) {
+              flashMisses++;
+              flashActive = false;
+            }
+          }, 1400);
+          flashTimeout = setTimeout(triggerFlash, 3000 + Math.random() * 3000);
+        };
+        flashTimeout = setTimeout(triggerFlash, 2000);
+
+        const renderGame = () => {
+          if (gameTime <= 0) return;
+
+          if (keyLeft) playerX -= 11; // Faster player movement
+          if (keyRight) playerX += 11;
+          playerX = Math.max(25, Math.min(canvas.width - 25, playerX));
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Render Flash Warning Overlay if active
+          if (flashActive) {
+            ctx.fillStyle = "rgba(39, 103, 73, 0.12)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#276749";
+            ctx.font = "bold 14px 'JetBrains Mono'";
+            ctx.textAlign = "center";
+            ctx.fillText("PRESS SPACE OR CLICK NOW!", canvas.width / 2, 40);
+          }
+
+          // Update & Draw Falling Rockets (replacing blocks)
+          for (let i = crates.length - 1; i >= 0; i--) {
+            const c = crates[i];
+            c.y += c.speed;
+
+            if (!c.evaluated && c.y + c.size >= canvas.height - 35) {
+              c.evaluated = true;
+              crateAttempts++;
+              if (Math.abs(c.x + c.size / 2 - playerX) <= 35) {
+                caughtCrates++;
+                gameScore += 10;
+                crates.splice(i, 1);
+                updateLiveScore();
+                continue;
+              }
+            }
+
+            if (c.y > canvas.height + 30) {
+              crates.splice(i, 1);
+              continue;
+            }
+
+            // Draw Rocket Sprite (Downward-facing supply rocket)
+            ctx.fillStyle = "#c05621"; // Sandal/Rust rocket body
+            ctx.beginPath();
+            ctx.moveTo(c.x + c.size / 2, c.y + c.size); // Nose cone
+            ctx.lineTo(c.x, c.y);
+            ctx.lineTo(c.x + c.size, c.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // Rocket fin highlights
+            ctx.fillStyle = "#744210";
+            ctx.fillRect(c.x - 3, c.y, 3, 10);
+            ctx.fillRect(c.x + c.size, c.y, 3, 10);
+          }
+
+          // Draw Player Collector Ship
+          ctx.fillStyle = "#744210";
+          ctx.fillRect(playerX - 35, canvas.height - 25, 70, 16);
+          ctx.fillStyle = "#b8860b";
+          ctx.fillRect(playerX - 15, canvas.height - 31, 30, 6);
+
+          requestAnimationFrame(renderGame);
+        };
+
+        requestAnimationFrame(renderGame);
+      }
+
+      /* =====================================================================
+       * STAGE 2: 40 MASTER DILEMMAS (Selecting exactly 5 random per test)
+       * ===================================================================== */
+      const masterDilemmaBank = [
+        { q: "Oxygen levels in Module A drop by 4% during sleep. Do you wake the crew instantly or test backup sensors?", o: [
+          { t: "Wake crew immediately and start emergency mask protocols.", p: 10, s: 10 },
+          { t: "Check backup sensors for 2 minutes before waking anyone.", p: 5, s: 6 },
+          { t: "Ignore it as a false alarm to let the crew sleep.", p: -20, s: -15 }
+        ]},
+        { q: "Ground control loses signal during a tricky docking maneuver. Do you hold position or proceed manually?", o: [
+          { t: "Hold position immediately until signal returns.", p: 10, s: 10 },
+          { t: "Proceed slowly using visual window sighting.", p: 6, s: 5 },
+          { t: "Fire thrusters aggressively to finish docking fast.", p: -15, s: -10 }
+        ]},
+        { q: "A crewmate shows signs of extreme panic before a spacewalk. Do you swap them out or force them to go?", o: [
+          { t: "Swap them out with a backup crewmate immediately.", p: 10, s: 10 },
+          { t: "Give them 10 minutes to calm down while monitoring vitals.", p: 4, s: 4 },
+          { t: "Force them outside to stick to the rigid timeline.", p: -25, s: -20 }
+        ]},
+        { q: "Water recycler failure leaks non-toxic fluid near electrical panels. Do you shut down power or mop it up live?", o: [
+          { t: "Shut down non-critical power feeds before cleaning.", p: 10, s: 10 },
+          { t: "Mop it up carefully while wearing rubber insulating gloves.", p: 5, s: 5 },
+          { t: "Wipe it quickly with paper towels with power fully active.", p: -15, s: -12 }
+        ]},
+        { q: "Solar panel 3 is overheating by 15%. Do you tilt it away or ignore until output drops?", o: [
+          { t: "Tilt panel away from direct solar radiation immediately.", p: 10, s: 10 },
+          { t: "Monitor temperature trends for the next orbit.", p: 3, s: 4 },
+          { t: "Ignore it until power generation actually drops.", p: -10, s: -10 }
+        ]},
+        { q: "Fire alarm sounds in the galley kitchen. Air readings show no smoke. Do you discharge extinguishers or investigate?", o: [
+          { t: "Inspect the galley air intake with a portable gas detector first.", p: 10, s: 10 },
+          { t: "Discharge automatic Halon extinguishers into the galley right away.", p: 2, s: 1 },
+          { t: "Disable the alarm klaxon and go back to sleep.", p: -30, s: -25 }
+        ]},
+        { q: "A supply capsule fails to latch on docking port 2. Do you abort and retry or force mechanical clamps?", o: [
+          { t: "Abort approach, back off 50 meters, and inspect docking hooks.", p: 10, s: 10 },
+          { t: "Command mechanical latches to force-lock under high torque.", p: -12, s: -10 },
+          { t: "Ask ground control to override safety sensors.", p: -15, s: -12 }
+        ]},
+        { q: "Main computer core reboots unexpectedly during an attitude burn. Do you switch to backup guidance or wait?", o: [
+          { t: "Switch instantly to backup navigation computer.", p: 10, s: 10 },
+          { t: "Wait 60 seconds for primary core to finish reboot sequence.", p: 2, s: 3 },
+          { t: "Manually override thrusters blindly without computer aid.", p: -20, s: -15 }
+        ]},
+        { q: "Astronaut reports severe chest tightness after heavy exercise. Do you start ECG telemetry or give aspirin?", o: [
+          { t: "Hook up 12-lead ECG telemetry and alert flight surgeon.", p: 10, s: 10 },
+          { t: "Have them lie down and drink electrolytes for 30 minutes.", p: -5, s: -5 },
+          { t: "Tell them it is just heartburn and resume work.", p: -25, s: -20 }
+        ]},
+        { q: "Trash compactor jams with toxic lithium batteries inside. Do you vent airlock or clear manually?", o: [
+          { t: "Put on respirator gear and clear jam using insulated tools.", p: 10, s: 10 },
+          { t: "Force compactor cycle to crush the obstruction.", p: -18, s: -15 },
+          { t: "Open waste compartment in open cabin air.", p: -30, s: -25 }
+        ]},
+        { q: "Radiator coolant pressure drops by 2%. Do you switch to secondary loop or top off fluid?", o: [
+          { t: "Activate backup cooling loop and isolate leaking sector.", p: 10, s: 10 },
+          { t: "Inject emergency sealant into the coolant line.", p: 4, s: 4 },
+          { t: "Ignore minor pressure loss until warning red light activates.", p: -10, s: -10 }
+        ]},
+        { q: "External spacewalker loses tether clip secondary latch. Do you order immediate airlock return?", o: [
+          { t: "Order immediate return to airlock for tether repair.", p: 10, s: 10 },
+          { t: "Instruct crewmate to buddy-clip to their safety line.", p: 6, s: 6 },
+          { t: "Allow them to finish task since primary clip is holding.", p: -25, s: -20 }
+        ]},
+        { q: "Carbon dioxide scrubbers are running at 90% capacity. Do you swap canisters now or wait?", o: [
+          { t: "Swap fresh lithium hydroxide canisters immediately.", p: 10, s: 10 },
+          { t: "Wait another 4 hours until CO2 hits safety warning limit.", p: -15, s: -12 },
+          { t: "Open cabin vent valves to raw space vacuum briefly.", p: -40, s: -35 }
+        ]},
+        { q: "Battery charging unit 4 shows erratic voltage spikes. Do you disconnect or let it finish?", o: [
+          { t: "Disconnect battery circuit breaker immediately.", p: 10, s: 10 },
+          { t: "Watch voltage display closely for 10 more minutes.", p: 2, s: 2 },
+          { t: "Leave it charging unattended overnight.", p: -20, s: -15 }
+        ]},
+        { q: "Space debris warning demands station orbit adjustment. Do you fire thrusters or shelter in Soyuz?", o: [
+          { t: "Execute scheduled Debris Avoidance Maneuver (DAM) burn.", p: 10, s: 10 },
+          { t: "Shelter in Soyuz return capsule without moving station.", p: 2, s: 4 },
+          { t: "Do nothing and hope debris misses us.", p: -50, s: -40 }
+        ]},
+        { q: "Water taste test reveals faint metallic chemical odor. Do you switch to backup tank?", o: [
+          { t: "Isolate tank and switch to contingency water bags.", p: 10, s: 10 },
+          { t: "Boil drinking water samples before consumption.", p: 4, s: 5 },
+          { t: "Drink normally, taste is probably harmless.", p: -12, s: -10 }
+        ]},
+        { q: "Gyroscope 2 vibrates loudly during station re-orientation. Do you spin it down or push through?", o: [
+          { t: "Spin down Gyroscope 2 and distribute load to gyros 1 and 3.", p: 10, s: 10 },
+          { t: "Reduce station turn rate by half and keep gyro running.", p: 4, s: 5 },
+          { t: "Ignore vibration until bearing failure locks up completely.", p: -20, s: -18 }
+        ]},
+        { q: "Medical centrifuge motor sparks during blood sample spin. Do you cut breaker or finish spin?", o: [
+          { t: "Cut power circuit breaker immediately and check for smoke.", p: 10, s: 10 },
+          { t: "Let centrifuge finish 60-second spin cycle.", p: -10, s: -8 },
+          { t: "Open lid while rotor is still spinning.", p: -30, s: -25 }
+        ]},
+        { q: "Hatch seal pressure test fails by 0.5 psi. Do you clean seal or repressurize?", o: [
+          { t: "Open hatch, clean seal debris with lint-free wipes, and re-test.", p: 10, s: 10 },
+          { t: "Apply silicone grease over dirty seal and test again.", p: 4, s: 5 },
+          { t: "Ignore 0.5 psi drop as instrument calibration error.", p: -20, s: -18 }
+        ]},
+        { q: "Power grid load exceeds 95% threshold. Do you turn off science labs or life support?", o: [
+          { t: "Shed non-essential science payload power feeds.", p: 10, s: 10 },
+          { t: "Dim station LED lighting panels by 50%.", p: 4, s: 4 },
+          { t: "Turn off cabin air circulation fans.", p: -25, s: -20 }
+        ]},
+        { q: "Astronaut drops heavy wrench near exposed wiring harness. Do you inspect or assume safe?", o: [
+          { t: "Inspect wiring insulation with flashlight and mirror.", p: 10, s: 10 },
+          { t: "Test circuit resistance with multimeter.", p: 6, s: 6 },
+          { t: "Assume wire is fine since no sparks appeared.", p: -15, s: -12 }
+        ]},
+        { q: "Nitrogen pressurization line hisses faintly in airlock. Do you seal leak or vent airlock?", o: [
+          { t: "Apply temporary high-pressure repair clamp.", p: 10, s: 10 },
+          { t: "Isolate nitrogen supply tank valve.", p: 6, s: 6 },
+          { t: "Ignore hiss until pressure gauge drops below green zone.", p: -15, s: -15 }
+        ]},
+        { q: "Humidity levels reach 80% due to condenser glitch. Do you wipe walls or reboot condenser?", o: [
+          { t: "Reboot air conditioning condenser and wipe condensation.", p: 10, s: 10 },
+          { t: "Open emergency desiccant drying bags in cabin.", p: 5, s: 5 },
+          { t: "Leave it alone until water droplets form on electronics.", p: -15, s: -12 }
+        ]},
+        { q: "Crew member refuses scheduled sleep medication after 48 hours awake. Do you force rest?", o: [
+          { t: "Relieve them from duty immediately and mandate sleep.", p: 10, s: 10 },
+          { t: "Allow them to work light tasks under supervision.", p: -5, s: -5 },
+          { t: "Let them keep working critical systems while exhausted.", p: -30, s: -25 }
+        ]},
+        { q: "Data storage hard drive hits 99% capacity. Do you delete old telemetry or stop logging?", o: [
+          { t: "Transmit compressed telemetry to ground and clear old logs.", p: 10, s: 10 },
+          { t: "Stop logging non-critical environmental sensor data.", p: 2, s: 3 },
+          { t: "Let drive overwrite oldest telemetry automatically.", p: -10, s: -8 }
+        ]},
+        { q: "Station attitude drifts 1.2 degrees off target. Do you fire reaction control thrusters?", o: [
+          { t: "Fire RCS thrusters to correct attitude drift.", p: 10, s: 10 },
+          { t: "Wait for next automatic momentum management burn.", p: 3, s: 3 },
+          { t: "Ignore drift since 1.2 degrees is within safety margin.", p: -5, s: -5 }
+        ]},
+        { q: "Food warmer unit emits burning plastic smell. Do you unplug or keep heating meal?", o: [
+          { t: "Unplug food warmer and inspect heating element.", p: 10, s: 10 },
+          { t: "Finish heating meal quickly before unplugging.", p: -15, s: -12 },
+          { t: "Spray air freshener near warmer and keep using it.", p: -25, s: -20 }
+        ]},
+        { q: "External camera 3 video feed turns completely black. Do you reset camera power?", o: [
+          { t: "Send power reset command to camera multiplexer.", p: 10, s: 10 },
+          { t: "Switch to backup camera feed for exterior monitoring.", p: 8, s: 8 },
+          { t: "Leave camera black and rely solely on radar.", p: -5, s: -5 }
+        ]},
+        { q: "Urine processor recycling unit flags chemical contamination. Do you bypass filter or dump batch?", o: [
+          { t: "Dump contaminated batch into waste tank and flush unit.", p: 10, s: 10 },
+          { t: "Bypass chemical sensor and run recycling cycle anyway.", p: -30, s: -25 },
+          { t: "Mix contaminated water with clean reserves to dilute.", p: -40, s: -35 }
+        ]},
+        { q: "Star tracker optical sensor blinded by direct sunlight angle. Do you rotate station?", o: [
+          { t: "Rotate station 5 degrees to shield star tracker optics.", p: 10, s: 10 },
+          { t: "Switch to inertial gyroscope navigation mode temporarily.", p: 8, s: 8 },
+          { t: "Wait 20 minutes for orbit to pass sun angle.", p: 4, s: 4 }
+        ]},
+        { q: "Airlock depressurization valve sticks halfway open. Do you use manual crank or abort?", o: [
+          { t: "Use manual mechanical override crank to close valve fully.", p: 10, s: 10 },
+          { t: "Cycle valve solenoid switch repeatedly via computer.", p: 2, s: 2 },
+          { t: "Ignore stuck valve since pressure is equalized.", p: -20, s: -18 }
+        ]},
+        { q: "Astronaut accidentally floats into restricted cargo bay. Do you retrieve or guide via radio?", o: [
+          { t: "Guide them calmly via intercom while they use handrails.", p: 10, s: 10 },
+          { t: "Send crewmate to physically retrieve them.", p: 6, s: 6 },
+          { t: "Lock cargo bay door from outside trapping them temporarily.", p: -20, s: -15 }
+        ]},
+        { q: "Emergency oxygen mask test shows low flow pressure in mask 2. Do you replace regulator?", o: [
+          { t: "Replace oxygen regulator cartridge immediately.", p: 10, s: 10 },
+          { t: "Mark mask as degraded and use backup mask 5.", p: 8, s: 8 },
+          { t: "Use low-pressure mask during emergency anyway.", p: -25, s: -20 }
+        ]},
+        { q: "Station internet downlink speed drops to zero. Do you restart high-gain antenna?", o: [
+          { t: "Reboot high-gain antenna pointing computer and transceiver.", p: 10, s: 10 },
+          { t: "Wait for next ground station pass for automatic re-link.", p: 4, s: 4 },
+          { t: "Send personal messages via unencrypted emergency radio.", p: -15, s: -15 }
+        ]},
+        { q: "Battery temperature in spacesuit 1 rises by 4 degrees. Do you swap suits?", o: [
+          { t: "Swap spacesuit before starting spacewalk operations.", p: 10, s: 10 },
+          { t: "Monitor suit telemetry during airlock pumpdown.", p: -5, s: -5 },
+          { t: "Proceed with spacewalk regardless of thermal warning.", p: -30, s: -25 }
+        ]},
+        { q: "A loose bolt floats behind instrument display panel. Do you dismantle panel or leave it?", o: [
+          { t: "Dismantle panel carefully with magnetic retrieval tools.", p: 10, s: 10 },
+          { t: "Wedge foam barrier so loose bolt cannot jam switches.", p: 4, s: 4 },
+          { t: "Ignore floating bolt until it shorts out circuit board.", p: -20, s: -18 }
+        ]},
+        { q: "Micrometeoroid impact sound heard in Node 1. Do you check hull pressure sensors?", o: [
+          { t: "Check all hull compartment pressure sensors and leak detectors.", p: 10, s: 10 },
+          { t: "Inspect Node 1 interior walls visually with flashlight.", p: 6, s: 6 },
+          { t: "Assume it was structural creaking from thermal expansion.", p: -15, s: -15 }
+        ]},
+        { q: "Lighting array in science lab fails completely. Do you replace LED ballast?", o: [
+          { t: "Install replacement LED ballast module using safety gloves.", p: 10, s: 10 },
+          { t: "Attach portable headlamps to lab handrails for lighting.", p: 6, s: 6 },
+          { t: "Work in total darkness using laptop screen light.", p: -15, s: -12 }
+        ]},
+        { q: "CO2 monitor in sleeping quarters reads 0.6% (high). Do you open ventilation duct?", o: [
+          { t: "Open sleeping quarters ventilation louver and clean fan filter.", p: 10, s: 10 },
+          { t: "Move sleeping bag into main open module hallway.", p: 6, s: 6 },
+          { t: "Sleep through high CO2 and deal with morning headache.", p: -20, s: -18 }
+        ]},
+        { q: "Station orbit decay rate is faster than predicted. Do you boost orbit now?", o: [
+          { t: "Schedule re-boost burn with Progress thrusters.", p: 10, s: 10 },
+          { t: "Recalculate atmospheric drag models for 24 hours.", p: 4, s: 4 },
+          { t: "Do nothing and let station drop further.", p: -15, s: -15 }
+        ]}
+      ];
+
+      let selectedDilemmas = [];
+      let currentDilemmaIdx = 0;
+
+      function startDilemmaQuiz() {
+        hudPhase.textContent = "STAGE 2 / 2";
+        protocolStatus.textContent = "OPERATIONAL & ETHICAL PROTOCOL DILEMMAS";
+        footerInfo.textContent = "Stage 2: 5 randomized mature aerospace dilemmas.";
+
+        // Randomly pick exactly 5 dilemmas per test run
+        selectedDilemmas = [...masterDilemmaBank].sort(() => 0.5 - Math.random()).slice(0, 5);
+        currentDilemmaIdx = 0;
+        renderCurrentDilemma();
+      }
+
+      function renderCurrentDilemma() {
+        const d = selectedDilemmas[currentDilemmaIdx];
+        viewport.innerHTML = `
+          <div class="dilemma-card">
+            <div class="mono" style="font-size: 10.5px; color: var(--indigo); text-transform: uppercase; letter-spacing: 0.1em;">
+              DILEMMA ${currentDilemmaIdx + 1} OF 5
+            </div>
+            <p style="font-size: 13.5px; line-height: 1.6; color: var(--text-primary); margin-top: 10px;">${d.q}</p>
+            <div class="dilemma-options" id="dilemma-options">
+              ${d.o.map((opt, idx) => `
+                <button type="button" class="option-btn" data-idx="${idx}">${opt.t}</button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+
+        document.querySelectorAll(".option-btn").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            const optIdx = parseInt(e.currentTarget.getAttribute("data-idx"), 10);
+            const chosen = d.o[optIdx];
+
+            telemetryData.dilemmaResponses.push({
+              questionNumber: currentDilemmaIdx + 1,
+              question: d.q,
+              chosenResponse: chosen.t,
+              protocolScoreDelta: chosen.p,
+              stabilityScoreDelta: chosen.s
+            });
+
+            telemetryData.integrityScore = Math.max(0, Math.min(100, telemetryData.integrityScore + chosen.s));
+            hudScore.textContent = telemetryData.integrityScore;
+
+            currentDilemmaIdx++;
+            if (currentDilemmaIdx < selectedDilemmas.length) {
+              renderCurrentDilemma();
+            } else {
+              completeProtocol();
+            }
+          });
+        });
+      }
+
+      function completeProtocol() {
+        hudPhase.textContent = "PROTOCOL COMPLETE";
+        protocolStatus.textContent = "PRACTICE SESSION COMPLETE";
+        footerInfo.textContent = "Status: Session complete; telemetry is ready to export.";
+
+        telemetryData.completedAt = new Date().toISOString();
+        const practiceSignals = telemetryData.gameResult?.practiceSignals || [];
+        const recommendation = telemetryData.gameResult?.recommendedGame;
+        const gameScore = Math.max(0, Math.min(100, Number(telemetryData.gameResult?.finalScore) || 0));
+        const dilemmaScore = telemetryData.integrityScore;
+        const integratedResult = {
+          schema: "halo-integrated-rehabilitation-result.v1",
+          sessionId: telemetryData.sessionId,
+          game: "Integrated Rehabilitation & Mission Dilemmas",
+          completedAt: telemetryData.completedAt,
+          score: Math.round((gameScore + dilemmaScore) / 2),
+          gameScore,
+          dilemmaScore,
+          dilemmaCount: telemetryData.dilemmaResponses.length
+        };
+        telemetryData.integratedResult = integratedResult;
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: "halo-rehab-complete", result: integratedResult }, window.location.origin);
+        }
+        const skillResultsMarkup = practiceSignals.map((signal) => `
+          <div class="stat-card skill-result">
+            <div class="stat-label">${signal.label}</div>
+            <div class="stat-value mono">${signal.display}</div>
+            <small>${signal.attempts} trials · ${signal.status}</small>
+          </div>
+        `).join("");
+        const jsonStr = JSON.stringify(telemetryData, null, 2);
+
+        viewport.innerHTML = `
+          <h2 class="mono" style="font-size: 1.25rem; font-weight: 600; color: var(--emerald);">Game Practice Summary &amp; Protocol Complete</h2>
+          <p style="font-size: 13px; color: var(--text-secondary); max-width: 640px; margin-top: 8px;">
+            These brief game measurements are experimental practice signals, not a diagnosis or clinical assessment. Use them as optional guidance only.
+          </p>
+          <div class="summary-grid">
+            <div class="stat-card" style="border-color: var(--border-cyan);">
+              <div class="stat-label">Mission Protocol Score</div>
+              <div class="stat-value mono" style="color: var(--emerald);">${telemetryData.integrityScore} / 100</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Game Score</div>
+              <div class="stat-value mono">${telemetryData.gameResult?.finalScore || 0} pts</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Dilemmas Resolved</div>
+              <div class="stat-value mono">${telemetryData.dilemmaResponses.length} / 5</div>
+            </div>
+          </div>
+          <div class="skill-results" aria-label="Game practice signals">${skillResultsMarkup}</div>
+          <section class="practice-recommendation" aria-label="Optional suggested game">
+            <div class="stat-label">Optional next game · ${recommendation.focus}</div>
+            <p>${recommendation.reason}</p>
+            <a class="game-link-card recommended" href="${recommendation.href}" target="_blank" rel="noopener noreferrer">
+              <strong>Play ${recommendation.name}</strong>
+              <span>Open the focused game in a new tab</span>
+            </a>
+          </section>
+          <div class="summary-actions">
+            <button type="button" id="btn-analyze-yuki" class="btn-primary">Analyze result with Yuki</button>
+            <button type="button" id="btn-download-integrated" class="btn-secondary mono">Download integrated JSON</button>
+          </div>
+          <p class="practice-note">Prototype thresholds are for demo feedback only. They are not validated clinical cutoffs, and a short game cannot determine a health condition or diagnose an ability deficit.</p>
+          <pre class="json-output-box">${jsonStr}</pre>
+          <button type="button" id="btn-restart" class="btn-primary" style="margin-top: 14px;">Run Protocol Again</button>
+        `;
+
+        document.getElementById("btn-restart").addEventListener("click", () => {
+          telemetryData = {
+            sessionId: `CLIN-${Date.now().toString(36).toUpperCase()}`,
+            protocolName: "HALO Game-Based Cognitive Practice & Mission Protocol",
+            integrityScore: 100,
+            gameResult: null,
+            dilemmaResponses: [],
+            completedAt: null,
+            integratedResult: null
+          };
+          hudScore.textContent = "100";
+          hudPhase.textContent = "GAME SIMULATION";
+          protocolStatus.textContent = "STAGE 1 · GAME-BASED PRACTICE SIGNALS";
+          footerInfo.textContent = "Status: Awaiting protocol initialization";
+          viewport.innerHTML = `
+            <h2 class="mono" style="font-size: 1.25rem; font-weight: 600; color: var(--indigo); letter-spacing: 0.05em;">MULTI-DOMAIN PRACTICE SIMULATION</h2>
+            <p style="max-width: 540px; font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); margin-top: 12px;">
+              This short game samples catch accuracy, visual-response speed, and attention, then suggests an optional follow-up game. These are experimental game signals, not a diagnosis or clinical assessment. You can then complete 5 randomized mission scenarios.
+            </p>
+            <button type="button" id="btn-start-game" class="btn-primary">Launch Rehabilitation Game</button>
+          `;
+          document.getElementById("btn-start-game").addEventListener("click", startRehabGame);
+        });
+
+        document.getElementById("btn-analyze-yuki").addEventListener("click", () => {
+          if (window.parent === window) {
+            showToast("Open this protocol from Cognitive Tasks to send the result to Yuki.");
+            return;
+          }
+          window.parent.postMessage({ type: "halo-rehab-analyze", result: integratedResult }, window.location.origin);
+        });
+        document.getElementById("btn-download-integrated").addEventListener("click", () => {
+          const blob = new Blob([JSON.stringify(telemetryData, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `halo-integrated-rehabilitation-${telemetryData.completedAt.slice(0, 10)}.json`;
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+
+        showToast("Complete telemetry secured!");
+      }
+
+      document.getElementById("btn-start-game").addEventListener("click", startRehabGame);
+
+      const assistantForm = document.getElementById("assistant-form");
+      const assistantInput = document.getElementById("assistant-input");
+      const assistantLog = document.getElementById("assistant-log");
+      const assistantStatus = document.getElementById("assistant-status");
+      const assistantSend = document.getElementById("assistant-send");
+      const assistantHistory = [];
+
+      function appendAssistantMessage(role, text) {
+        const message = document.createElement("p");
+        message.className = `assistant-message ${role}`;
+        message.textContent = text;
+        assistantLog.appendChild(message);
+        assistantLog.scrollTop = assistantLog.scrollHeight;
+      }
+
+      assistantForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = assistantInput.value.trim();
+        if (!message || assistantSend.disabled) return;
+        if (window.location.protocol !== "http:" && window.location.protocol !== "https:") {
+          assistantStatus.setAttribute("role", "alert");
+          assistantStatus.textContent = "Yuki AI needs the HALO server API. Serve this page through the HALO app; direct file mode cannot reach the server.";
+          return;
+        }
+
+        appendAssistantMessage("user", message);
+        assistantInput.value = "";
+        assistantSend.disabled = true;
+        assistantStatus.setAttribute("role", "status");
+        assistantStatus.textContent = "Yuki is thinking…";
+
+        try {
+          const response = await fetch(new URL("/api/yuki-assistant", window.location.href), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              intent: "chat",
+              message,
+              history: assistantHistory.slice(-8)
+            })
+          });
+          let result;
+          try {
+            result = await response.json();
+          } catch {
+            throw new Error("The Yuki API returned an unreadable response.");
+          }
+          if (!response.ok) throw new Error(result?.error || `The Yuki API returned HTTP ${response.status}.`);
+          if (typeof result?.reply !== "string" || !result.reply.trim()) throw new Error("The Yuki API returned no reply.");
+
+          appendAssistantMessage("assistant", result.reply);
+          assistantHistory.push({ role: "user", content: message }, { role: "assistant", content: result.reply });
+          assistantHistory.splice(0, Math.max(0, assistantHistory.length - 8));
+          assistantStatus.textContent = result.warning || (result.provider === "groq"
+            ? "Connected to Yuki through the HALO server."
+            : "Yuki replied using the server’s offline fallback.");
+        } catch (error) {
+          assistantStatus.setAttribute("role", "alert");
+          assistantStatus.textContent = error instanceof Error ? error.message : "The Yuki request failed.";
+        } finally {
+          assistantSend.disabled = false;
+          assistantInput.focus();
+        }
+      });
+
+      btnExport.addEventListener("click", () => {
+        const blob = new Blob([JSON.stringify(telemetryData, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `halo-integrated-protocol-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Telemetry JSON downloaded!");
+      });
+    })();
+  </script>
+</body>
+</html>

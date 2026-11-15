@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HALO · Motor &amp; Coordination Orbital Supply Catch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #020617;
+      --bg-panel: rgba(15, 23, 42, 0.78);
+      --bg-card: rgba(2, 6, 23, 0.85);
+      --border-subtle: rgba(51, 65, 85, 0.65);
+      --border-cyan: rgba(34, 211, 238, 0.45);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.14);
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --emerald: #34d399;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-deep);
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(34, 211, 238, 0.07), transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06), transparent 45%),
+        linear-gradient(rgba(30, 41, 59, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 41, 59, 0.2) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    .console-shell {
+      width: 100%;
+      max-width: 920px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      padding: 24px;
+    }
+
+    .telemetry-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .protocol-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    .protocol-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 6px;
+      color: var(--text-primary);
+    }
+
+    .telemetry-badges {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 6px 11px;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge strong { color: var(--text-primary); }
+
+    /* Canvas Viewport */
+    .game-viewport-wrapper {
+      position: relative;
+      margin-top: 20px;
+      width: 100%;
+      height: 380px;
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      background: #020617;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #090d1e 0%, #020617 100%);
+    }
+
+    .overlay-screen {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.88);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      z-index: 10;
+    }
+
+    .btn-primary {
+      margin-top: 20px;
+      background: var(--cyan);
+      color: #020617;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 24px rgba(34, 211, 238, 0.3);
+      transition: transform 0.1s ease, background 0.15s ease;
+    }
+
+    .btn-primary:hover { background: #67e8f9; transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.85);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      padding: 9px 16px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 14px;
+    }
+
+    .stat-card {
+      background: rgba(2, 6, 23, 0.88);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .stat-label { font-size: 10.5px; text-transform: uppercase; color: var(--text-secondary); }
+    .stat-value { margin-top: 4px; font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+
+    .json-output-box {
+      margin-top: 14px;
+      width: 100%;
+      max-width: 600px;
+      background: rgba(2, 6, 23, 0.94);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--cyan);
+      max-height: 125px;
+      overflow-y: auto;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .telemetry-footer {
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid var(--border-cyan);
+      color: var(--text-primary);
+      padding: 11px 16px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      z-index: 50;
+      pointer-events: none;
+    }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+  </style>
+  <script src="mission-soundtrack.js" defer></script>
+</head>
+<body>
+
+  <main class="console-shell">
+    <header class="telemetry-header">
+      <div>
+        <div class="protocol-kicker">
+          <span class="status-dot"></span>
+          <span id="game-status-text">SYSTEM READY · MOTOR TEST</span>
+        </div>
+        <h1 class="protocol-title">Orbital Supply Catch</h1>
+      </div>
+      <div class="telemetry-badges">
+        <div class="badge mono">SCORE: <strong id="hud-score">0</strong></div>
+        <div class="badge mono">LIVES: <strong id="hud-lives">3</strong></div>
+      </div>
+    </header>
+
+    <div class="game-viewport-wrapper">
+      <canvas id="game-canvas"></canvas>
+      <div id="overlay-screen" class="overlay-screen">
+        <h2 class="mono" style="font-size: 1.4rem; color: var(--cyan);">Orbital Supply Catch</h2>
+        <p style="max-width: 440px; font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; margin-top: 10px;">
+          Use <strong style="color:var(--text-primary)">Left/Right Arrow keys</strong> (or mouse/touch drag) to guide the ISS collector bay. Catch falling <strong style="color:var(--emerald)">Supply Crates (+1)</strong> while avoiding <strong style="color:var(--rose)">Debris Hazards</strong>.
+        </p>
+        <button type="button" id="btn-start" class="btn-primary">Launch Simulation</button>
+      </div>
+    </div>
+
+    <footer class="telemetry-footer">
+      <div class="mono" style="font-size: 11.5px; color: var(--text-secondary);" id="footer-info">
+        Status: Standby for launch
+      </div>
+      <button type="button" id="btn-export" class="btn-secondary mono">Download JSON</button>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast mono"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const canvas = document.getElementById("game-canvas");
+      const ctx = canvas.getContext("2d");
+      const overlayEl = document.getElementById("overlay-screen");
+      const btnStart = document.getElementById("btn-start");
+      const btnExport = document.getElementById("btn-export");
+      const hudScore = document.getElementById("hud-score");
+      const hudLives = document.getElementById("hud-lives");
+      const footerInfo = document.getElementById("footer-info");
+      const toastEl = document.getElementById("toast");
+
+      let gameState = "idle"; // idle | playing | gameover
+      let score = 0;
+      let lives = 3;
+      let cratesCaught = 0;
+      let debrisHit = 0;
+      let lastSummary = null;
+
+      const collector = {
+        x: 0,
+        y: 0,
+        width: 80,
+        height: 16,
+        speed: 9
+      };
+
+      let items = [];
+      let spawnTimer = 0;
+      const keys = { left: false, right: false };
+
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("visible");
+        clearTimeout(showToast._tid);
+        showToast._tid = setTimeout(() => toastEl.classList.remove("visible"), 2500);
+      }
+
+      function resizeCanvas() {
+        const wrapper = canvas.parentElement;
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
+        collector.y = canvas.height - 35;
+        if (gameState === "idle") {
+          collector.x = canvas.width / 2 - collector.width / 2;
+        }
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "ArrowLeft" || e.key === "a") keys.left = true;
+        if (e.code === "ArrowRight" || e.key === "d") keys.right = true;
+      });
+
+      window.addEventListener("keyup", (e) => {
+        if (e.code === "ArrowLeft" || e.key === "a") keys.left = false;
+        if (e.code === "ArrowRight" || e.key === "d") keys.right = false;
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        collector.x = mouseX - collector.width / 2;
+      });
+
+      canvas.addEventListener("touchmove", (e) => {
+        if (e.touches.length > 0) {
+          const rect = canvas.getBoundingClientRect();
+          const touchX = e.touches[0].clientX - rect.left;
+          collector.x = touchX - collector.width / 2;
+        }
+      }, { passive: true });
+
+      function spawnItem() {
+        const isDebris = Math.random() < 0.28;
+        items.push({
+          x: Math.random() * (canvas.width - 32),
+          y: -30,
+          size: isDebris ? 26 : 30,
+          speed: (2.2 + Math.random() * 2.5) * (1 + score * 0.03),
+          isDebris
+        });
+      }
+
+      function startGame() {
+        score = 0;
+        lives = 3;
+        cratesCaught = 0;
+        debrisHit = 0;
+        items = [];
+        spawnTimer = 0;
+        gameState = "playing";
+        hudScore.textContent = score;
+        hudLives.textContent = lives;
+        footerInfo.textContent = "Simulation Active · Stabilize Collector";
+        overlayEl.style.display = "none";
+        requestAnimationFrame(gameLoop);
+      }
+
+      function gameLoop() {
+        if (gameState !== "playing") return;
+
+        // Update collector position via keyboard
+        if (keys.left) collector.x -= collector.speed;
+        if (keys.right) collector.x += collector.speed;
+
+        // Boundary clamp
+        if (collector.x < 0) collector.x = 0;
+        if (collector.x > canvas.width - collector.width) {
+          collector.x = canvas.width - collector.width;
+        }
+
+        // Spawn items
+        spawnTimer++;
+        if (spawnTimer > 45) {
+          spawnItem();
+          spawnTimer = 0;
+        }
+
+        // Update items
+        for (let i = items.length - 1; i >= 0; i--) {
+          const item = items[i];
+          item.y += item.speed;
+
+          // Check collision with collector bay
+          if (
+            item.y + item.size >= collector.y &&
+            item.y <= collector.y + collector.height &&
+            item.x + item.size >= collector.x &&
+            item.x <= collector.x + collector.width
+          ) {
+            if (item.isDebris) {
+              lives--;
+              debrisHit++;
+              showToast("Debris Impact! Life Lost");
+            } else {
+              score += 10;
+              cratesCaught++;
+            }
+            hudScore.textContent = score;
+            hudLives.textContent = lives;
+            items.splice(i, 1);
+            if (lives <= 0) {
+              endGame();
+              return;
+            }
+            continue;
+          }
+
+          // Off screen bottom
+          if (item.y > canvas.height + 40) {
+            items.splice(i, 1);
+          }
+        }
+
+        // Render Canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw starfield dots
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        for (let i = 0; i < 35; i++) {
+          const sx = (i * 73) % canvas.width;
+          const sy = (i * 41 + Date.now() * 0.02) % canvas.height;
+          ctx.fillRect(sx, sy, 1.5, 1.5);
+        }
+
+        // Draw Collector Bay
+        ctx.fillStyle = "#22d3ee";
+        ctx.shadowColor = "rgba(34, 211, 238, 0.6)";
+        ctx.shadowBlur = 12;
+        ctx.fillRect(collector.x, collector.y, collector.width, collector.height);
+        ctx.shadowBlur = 0;
+
+        // Draw Items
+        items.forEach(item => {
+          ctx.fillStyle = item.isDebris ? "#fb7185" : "#34d399";
+          ctx.shadowColor = item.isDebris ? "rgba(251, 113, 133, 0.8)" : "rgba(52, 211, 153, 0.8)";
+          ctx.shadowBlur = 10;
+          ctx.fillRect(item.x, item.y, item.size, item.size);
+          ctx.shadowBlur = 0;
+        });
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      function endGame() {
+        gameState = "gameover";
+        const summary = {
+          sessionId: `ORB-${Date.now().toString(36).toUpperCase()}`,
+          taskType: "Orbital Supply Catch",
+          finalScore: score,
+          cratesCaught,
+          debrisHit,
+          completedAt: new Date().toISOString()
+        };
+        lastSummary = summary;
+        const jsonStr = JSON.stringify(summary, null, 2);
+
+        overlayEl.style.display = "flex";
+        overlayEl.innerHTML = `
+          <h2 class="mono" style="font-size: 1.3rem; color: var(--rose);">Simulation Ended</h2>
+          <div class="summary-grid">
+            <div class="stat-card" style="border-color: var(--border-cyan);">
+              <div class="stat-label">Final Score</div>
+              <div class="stat-value mono" style="color: var(--emerald);">${score}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Crates Caught</div>
+              <div class="stat-value mono">${cratesCaught}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Debris Hits</div>
+              <div class="stat-value mono" style="color: var(--rose);">${debrisHit}</div>
+            </div>
+          </div>
+          <pre class="json-output-box">${jsonStr}</pre>
+          <button type="button" id="btn-restart" class="btn-primary" style="margin-top:14px;">Run Simulation Again</button>
+        `;
+
+        document.getElementById("btn-restart").addEventListener("click", startGame);
+        showToast("Orbital Supply Catch telemetry secured!");
+      }
+
+      btnStart.addEventListener("click", startGame);
+
+      btnExport.addEventListener("click", () => {
+        if (!lastSummary) {
+          showToast("Complete a simulation run first.");
+          return;
+        }
+        const blob = new Blob([JSON.stringify(lastSummary, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `halo-orbital-catch-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("JSON downloaded!");
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HALO · Divided Attention &amp; Dual-Task Docking Protocol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #020617;
+      --bg-panel: rgba(11, 18, 33, 0.88);
+      --bg-card: rgba(2, 6, 23, 0.92);
+      --border-subtle: rgba(51, 65, 85, 0.55);
+      --border-cyan: rgba(34, 211, 238, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.12);
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --emerald: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-deep);
+      background-image:
+        radial-gradient(circle at 85% 15%, rgba(34, 211, 238, 0.05), transparent 45%),
+        radial-gradient(circle at 15% 85%, rgba(245, 158, 11, 0.04), transparent 50%),
+        linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    .console-shell {
+      width: 100%;
+      max-width: 960px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      padding: 24px;
+    }
+
+    .telemetry-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .protocol-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    .protocol-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-top: 4px;
+      color: var(--text-primary);
+    }
+
+    .telemetry-badges {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge strong { color: var(--text-primary); font-weight: 600; }
+
+    /* Canvas Viewport */
+    .game-viewport-wrapper {
+      position: relative;
+      margin-top: 20px;
+      width: 100%;
+      height: 400px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: #010409;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #010409;
+    }
+
+    .overlay-screen {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px;
+      z-index: 10;
+    }
+
+    .btn-primary {
+      margin-top: 22px;
+      background: var(--cyan);
+      color: #020617;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
+      transition: transform 0.1s ease, background 0.15s ease;
+    }
+
+    .btn-primary:hover { background: #67e8f9; transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: #0f172a;
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+
+    .btn-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      width: 100%;
+      max-width: 620px;
+      margin-top: 14px;
+    }
+
+    .stat-card {
+      background: rgba(2, 6, 23, 0.9);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); }
+    .stat-value { margin-top: 3px; font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+
+    .json-output-box {
+      margin-top: 14px;
+      width: 100%;
+      max-width: 620px;
+      background: rgba(2, 6, 23, 0.95);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--cyan);
+      max-height: 130px;
+      overflow-y: auto;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .telemetry-footer {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid var(--border-cyan);
+      color: var(--text-primary);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      z-index: 50;
+      pointer-events: none;
+    }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+  </style>
+  <script src="mission-soundtrack.js" defer></script>
+</head>
+<body>
+
+  <main class="console-shell">
+    <header class="telemetry-header">
+      <div>
+        <div class="protocol-kicker">
+          <span class="status-dot"></span>
+          <span id="game-status-text">AVIONICS BUS NOMINAL · DUAL-TASK PROTOCOL</span>
+        </div>
+        <h1 class="protocol-title">Dual-Task Docking &amp; Warning Acknowledgment</h1>
+      </div>
+      <div class="telemetry-badges">
+        <div class="badge mono">STABILITY SCORE: <strong id="hud-score">0</strong></div>
+        <div class="badge mono">MISSION TIME: <strong id="hud-timer">30s</strong></div>
+      </div>
+    </header>
+
+    <div class="game-viewport-wrapper">
+      <canvas id="game-canvas"></canvas>
+      <div id="overlay-screen" class="overlay-screen">
+        <h2 class="mono" style="font-size: 1.1rem; font-weight: 600; color: var(--cyan); letter-spacing: 0.05em;">DOCKING TRAINING</h2>
+        <p style="max-width: 500px; font-size: 13px; line-height: 1.6; color: #94a3b8; margin-top: 10px;">
+          <strong style="color:var(--text-primary)">Control:</strong> Keep the green ball inside or touching the <strong style="color:var(--rose)">red target point</strong> in the middle. If it drifts away, you lose points.<br>
+          <strong style="color:var(--amber)">Warning Light:</strong> When the caution light flashes, press <span class="mono" style="background:#0f172a;padding:1px 5px;border-radius:4px;border:1px solid #334155">SPACE</span> or click quickly!
+        </p>
+        <button type="button" id="btn-start" class="btn-primary">Start Game (30 Seconds)</button>
+      </div>
+    </div>
+
+    <footer class="telemetry-footer">
+      <div class="mono" style="font-size: 11px; color: var(--text-secondary);" id="footer-info">
+        Status: Waiting to start
+      </div>
+      <button type="button" id="btn-export" class="btn-secondary mono">Save Results (JSON)</button>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast mono"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const canvas = document.getElementById("game-canvas");
+      const ctx = canvas.getContext("2d");
+      const overlayEl = document.getElementById("overlay-screen");
+      const btnStart = document.getElementById("btn-start");
+      const btnExport = document.getElementById("btn-export");
+      const hudScore = document.getElementById("hud-score");
+      const hudTimer = document.getElementById("hud-timer");
+      const footerInfo = document.getElementById("footer-info");
+      const toastEl = document.getElementById("toast");
+
+      let gameState = "idle";
+      let score = 100; // Start with 100 points
+      let timeRemaining = 30;
+      let timerInterval = null;
+      let warningActive = false;
+      let warningTimer = null;
+      let alignmentErrors = [];
+      let lastSummary = null;
+
+      const crosshair = { x: 0, y: 0 };
+      const target = { x: 0, y: 0, radius: 45 };
+      const keys = { up: false, down: false, left: false, right: false };
+
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("visible");
+        clearTimeout(showToast._tid);
+        showToast._tid = setTimeout(() => toastEl.classList.remove("visible"), 2500);
+      }
+
+      function resizeCanvas() {
+        const wrapper = canvas.parentElement;
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
+        target.x = canvas.width / 2;
+        target.y = canvas.height / 2;
+        if (gameState === "idle") {
+          crosshair.x = target.x;
+          crosshair.y = target.y;
+        }
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "ArrowUp" || e.key === "w") keys.up = true;
+        if (e.code === "ArrowDown" || e.key === "s") keys.down = true;
+        if (e.code === "ArrowLeft" || e.key === "a") keys.left = true;
+        if (e.code === "ArrowRight" || e.key === "d") keys.right = true;
+        if (e.code === "Space") {
+          e.preventDefault();
+          handleWarningAcknowledge();
+        }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        if (e.code === "ArrowUp" || e.key === "w") keys.up = false;
+        if (e.code === "ArrowDown" || e.key === "s") keys.down = false;
+        if (e.code === "ArrowLeft" || e.key === "a") keys.left = false;
+        if (e.code === "ArrowRight" || e.key === "d") keys.right = false;
+      });
+
+      canvas.addEventListener("click", handleWarningAcknowledge);
+
+      function handleWarningAcknowledge() {
+        if (gameState !== "playing") return;
+        if (warningActive) {
+          warningActive = false;
+          score += 20;
+          hudScore.textContent = score;
+          showToast("Good job! +20 points");
+        } else {
+          score = Math.max(0, score - 10);
+          hudScore.textContent = score;
+          showToast("Wrong click! -10 points");
+        }
+      }
+
+      function scheduleWarning() {
+        if (gameState !== "playing") return;
+        const nextInterval = 4000 + Math.random() * 4000;
+        warningTimer = setTimeout(() => {
+          if (gameState !== "playing") return;
+          warningActive = true;
+          setTimeout(() => {
+            if (warningActive) warningActive = false;
+          }, 2500);
+          scheduleWarning();
+        }, nextInterval);
+      }
+
+      function startTest() {
+        score = 100;
+        timeRemaining = 30;
+        alignmentErrors = [];
+        gameState = "playing";
+        crosshair.x = target.x;
+        crosshair.y = target.y;
+        hudScore.textContent = score;
+        hudTimer.textContent = `${timeRemaining}s`;
+        footerInfo.textContent = "Game running · Keep green ball on the red point!";
+        overlayEl.style.display = "none";
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          timeRemaining--;
+          hudTimer.textContent = `${timeRemaining}s`;
+          if (timeRemaining <= 0) endTest();
+        }, 1000);
+
+        scheduleWarning();
+        requestAnimationFrame(gameLoop);
+      }
+
+      function gameLoop() {
+        if (gameState !== "playing") return;
+
+        // Slight drift
+        crosshair.x += (Math.random() - 0.5) * 3.0;
+        crosshair.y += (Math.random() - 0.5) * 3.0;
+
+        const moveSpeed = 3.5;
+        if (keys.up) crosshair.y -= moveSpeed;
+        if (keys.down) crosshair.y += moveSpeed;
+        if (keys.left) crosshair.x -= moveSpeed;
+        if (keys.right) crosshair.x += moveSpeed;
+
+        crosshair.x = Math.max(20, Math.min(canvas.width - 20, crosshair.x));
+        crosshair.y = Math.max(20, Math.min(canvas.height - 20, crosshair.y));
+
+        const dist = Math.hypot(crosshair.x - target.x, crosshair.y - target.y);
+        alignmentErrors.push(dist);
+
+        // Deduct points if outside target radius
+        if (dist > target.radius) {
+          score = Math.max(0, score - 0.25);
+          hudScore.textContent = Math.round(score);
+        }
+
+        // Render Canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Target Zone Ring
+        ctx.beginPath();
+        ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = dist <= target.radius ? "rgba(52, 211, 153, 0.4)" : "rgba(244, 63, 94, 0.4)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // BIGGER RED TARGET POINT IN THE CENTER
+        ctx.beginPath();
+        ctx.arc(target.x, target.y, 22, 0, Math.PI * 2);
+        ctx.fillStyle = "#f43f5e";
+        ctx.shadowColor = "rgba(244, 63, 94, 0.8)";
+        ctx.shadowBlur = 14;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // SMALL GREEN DOT (CURSOR)
+        ctx.beginPath();
+        ctx.arc(crosshair.x, crosshair.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = dist <= target.radius ? "#10b981" : "#f59e0b";
+        ctx.shadowColor = dist <= target.radius ? "rgba(16, 185, 129, 0.8)" : "rgba(245, 158, 11, 0.8)";
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Warning Annunciator (Top Right)
+        const annX = canvas.width - 60;
+        const annY = 35;
+        ctx.beginPath();
+        ctx.rect(annX - 35, annY - 14, 70, 28);
+        ctx.fillStyle = warningActive ? "rgba(245, 158, 11, 0.25)" : "rgba(15, 23, 42, 0.6)";
+        ctx.fill();
+        ctx.strokeStyle = warningActive ? "#f59e0b" : "#334155";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = warningActive ? "#f59e0b" : "#64748b";
+        ctx.font = "10px 'JetBrains Mono'";
+        ctx.textAlign = "center";
+        ctx.fillText("WARNING", annX, annY + 4);
+        ctx.textAlign = "left";
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      function endTest() {
+        gameState = "gameover";
+        clearInterval(timerInterval);
+        clearTimeout(warningTimer);
+
+        const finalScoreRounded = Math.round(score);
+        const avgError = alignmentErrors.length ? Math.round(alignmentErrors.reduce((a, b) => a + b, 0) / alignmentErrors.length) : 0;
+
+        const summary = {
+          sessionId: `DT-${Date.now().toString(36).toUpperCase()}`,
+          testType: "Dual-Task Docking Simple",
+          finalScore: finalScoreRounded,
+          averageDriftPixels: avgError,
+          completedAt: new Date().toISOString()
+        };
+
+        lastSummary = summary;
+        const jsonStr = JSON.stringify(summary, null, 2);
+
+        overlayEl.style.display = "flex";
+        overlayEl.innerHTML = `
+          <h2 class="mono" style="font-size: 1.15rem; font-weight: 600; color: var(--emerald);">GAME OVER</h2>
+          <div class="summary-grid">
+            <div class="stat-card" style="border-color: var(--border-cyan);">
+              <div class="stat-label">Final Score</div>
+              <div class="stat-value mono" style="color: var(--emerald);">${finalScoreRounded}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Average Drift</div>
+              <div class="stat-value mono">${avgError} px</div>
+            </div>
+          </div>
+          <pre class="json-output-box">${jsonStr}</pre>
+          <button type="button" id="btn-restart" class="btn-primary" style="margin-top:14px;">Play Again</button>
+        `;
+
+        document.getElementById("btn-restart").addEventListener("click", startTest);
+        showToast("Game results saved!");
+      }
+
+      btnStart.addEventListener("click", startTest);
+
+      btnExport.addEventListener("click", () => {
+        if (!lastSummary) {
+          showToast("Play a round first.");
+          return;
+        }
+        const blob = new Blob([JSON.stringify(lastSummary, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `halo-dual-docking-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("JSON file saved!");
+      });
+    })();
+  </script>
+</body>
+</html>

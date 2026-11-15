@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HALO · Cognitive Rehabilitation Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(1000px 500px at 82% -12%, rgba(35,100,150,.22) 0%, transparent 62%), #07111f;
+      background-attachment: fixed;
+      color: #e6edf5;
+      overflow-x: hidden;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .exercise-card {
+      transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease, border-color .2s ease;
+    }
+    .exercise-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 26px -12px rgba(38,135,179,.35);
+      border-color: #4b9fc2;
+    }
+    .exercise-card:hover .start-overlay { opacity: 1; }
+    .exercise-card:hover .card-art svg { transform: scale(1.06); }
+    .card-art svg { transition: transform .4s ease; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1726; }
+    ::-webkit-scrollbar-thumb { background: #38536c; border-radius: 9999px; }
+
+    /* ---------- Exercise stage (self-contained styles) ---------- */
+    .stage-art { position:absolute; inset:0; opacity:.14; pointer-events:none; }
+    .stage-art svg { width:100%; height:100%; }
+    .stage-inner { position:relative; z-index:1; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; overflow:hidden; }
+    .g-card { max-width:450px; text-align:center; background:rgba(23,16,51,.96); border:1px solid #4c1d95; border-radius:18px; padding:20px 26px; box-shadow:0 20px 40px -12px rgba(0,0,0,.6); display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .g-kicker { font:700 10px 'JetBrains Mono',monospace; letter-spacing:.08em; text-transform:uppercase; color:#c084fc; }
+    .g-title { font-size:1.35rem; font-weight:800; color:#fff; line-height:1.2; }
+    .g-how { font-size:.78rem; line-height:1.5; color:#cbd5e1; }
+    .g-meta { font:600 10.5px 'JetBrains Mono',monospace; color:#a78bfa; }
+    .g-score { font:800 3rem 'JetBrains Mono',monospace; color:#34d399; line-height:1; }
+    .g-score span { font-size:1rem; color:#a78bfa; margin-left:4px; }
+    .g-rating { font-weight:700; color:#e9d5ff; }
+    .g-btn { padding:.55rem 1.3rem; border-radius:.75rem; background:#7c3aed; color:#fff; font-weight:700; font-size:.78rem; border:1px solid transparent; cursor:pointer; transition:background .15s, transform .08s; user-select:none; }
+    .g-btn:hover { background:#6d28d9; }
+    .g-btn:active { transform:scale(.97); }
+    .g-btn.alt { background:#3b0764; border-color:#6b21a8; }
+    .g-btn.alt:hover { background:#581c87; }
+    .g-btn.sm { padding:.4rem .95rem; }
+    .g-row { display:flex; gap:.6rem; align-items:center; justify-content:center; flex-wrap:wrap; }
+    .g-prompt { font-size:.8rem; color:#e9d5ff; text-align:center; min-height:1.2em; }
+    .g-big { font:800 1.7rem 'JetBrains Mono',monospace; color:#fff; text-align:center; }
+    .g-canvas { border:1px solid #4c1d95; border-radius:12px; background:#0b0520; touch-action:none; max-width:100%; cursor:crosshair; display:block; }
+    .g-panel { width:min(100%,420px); background:#171033; border:1px solid #4c1d95; border-radius:18px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:10px; cursor:pointer; user-select:none; }
+    .g-light { width:92px; height:92px; border-radius:50%; background:#b91c1c; box-shadow:0 0 0 6px #2e1065, inset 0 -6px 14px rgba(0,0,0,.4); }
+    .g-light.green { background:#22c55e; box-shadow:0 0 0 6px #14532d, 0 0 44px #22c55e; }
+    .g-grid { display:grid; gap:8px; }
+    .g-cell { height:54px; border-radius:12px; background:#1e1b4b; border:1px solid #312e81; cursor:pointer; transition:background .08s; }
+    .g-cell.leak { background:#dc2626; border-color:#fca5a5; box-shadow:0 0 18px #ef4444; }
+    .g-cell.sealed { background:#16a34a; border-color:#86efac; }
+    .g-orb { width:120px; height:120px; border-radius:50%; margin:4px auto; transition:opacity .08s; }
+    .g-orb.flare { background:radial-gradient(circle,#fff7ae 0,#fb923c 40%,#dc2626 72%,rgba(220,38,38,0) 74%); box-shadow:0 0 70px #f97316; }
+    .g-orb.aurora { background:radial-gradient(circle,#a7f3d0 0,#34d399 45%,#0e7490 76%,rgba(14,116,144,0) 78%); box-shadow:0 0 70px #22d3ee; }
+    .g-orb.idle { background:#171033; box-shadow:none; border:2px dashed #312e81; }
+    .g-gauge { position:relative; width:min(100%,560px); height:46px; background:#171033; border:1px solid #4c1d95; border-radius:10px; overflow:hidden; }
+    .g-gauge-fill { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#7c3aed,#f97316); }
+    .g-gauge-band { position:absolute; top:0; bottom:0; background:rgba(52,211,153,.3); border-left:2px solid #34d399; border-right:2px solid #34d399; }
+    .g-arrow { font-size:92px; line-height:1; color:#c084fc; font-weight:800; min-height:96px; }
+    .g-pad { display:grid; grid-template-columns:repeat(3,58px); grid-template-rows:repeat(2,42px); gap:6px; }
+    .g-pad .u { grid-column:2; grid-row:1; } .g-pad .l { grid-column:1; grid-row:2; } .g-pad .d { grid-column:2; grid-row:2; } .g-pad .r { grid-column:3; grid-row:2; }
+    .g-pad button { font-size:1.1rem; padding:0; }
+    .g-radar { position:relative; width:250px; height:250px; border-radius:50%; background:radial-gradient(circle,#0b2a2a 0,#071b1b 60%,#04100f 100%); border:2px solid #0e7490; overflow:hidden; }
+    .g-sweep { position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 0deg, rgba(52,211,153,.4), rgba(52,211,153,0) 60deg, rgba(52,211,153,0) 360deg); animation:gspin 3.2s linear infinite; }
+    @keyframes gspin { to { transform:rotate(360deg); } }
+    .g-ring { position:absolute; border:1px solid rgba(34,211,238,.3); border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%); }
+    .g-blip { position:absolute; width:24px; height:24px; margin:-12px 0 0 -12px; border-radius:50%; border:0; cursor:pointer; }
+    .g-blip.gold { background:#fbbf24; box-shadow:0 0 14px #fbbf24; }
+    .g-blip.cyan { background:#22d3ee; box-shadow:0 0 12px #22d3ee; }
+    .g-num { width:70px; height:34px; border-radius:8px; background:#1e1b4b; border:1px solid #312e81; color:#e9d5ff; font:600 12px 'JetBrains Mono',monospace; cursor:pointer; }
+    .g-num:hover { border-color:#a855f7; }
+    .g-num.bad { background:#7f1d1d; border-color:#ef4444; }
+    .g-num.good { background:#14532d; border-color:#34d399; }
+    .g-keypad { display:grid; grid-template-columns:repeat(3,80px); gap:8px; }
+    .g-key { height:52px; border-radius:12px; background:#1e1b4b; border:1px solid #4c1d95; color:#e9d5ff; font:700 18px 'JetBrains Mono',monospace; cursor:pointer; transition:background .08s, box-shadow .08s; }
+    .g-key.lit { background:#a855f7; box-shadow:0 0 22px #c084fc; color:#fff; }
+    .g-key.wrong { background:#b91c1c; }
+    .g-relays { display:grid; grid-template-columns:repeat(5,52px); gap:6px; }
+    .g-relay { height:40px; border-radius:9px; background:#1e1b4b; border:1px solid #312e81; cursor:pointer; }
+    .g-relay.show { background:#f59e0b; box-shadow:0 0 14px #f59e0b; }
+    .g-relay.sel { background:#7c3aed; border-color:#c084fc; }
+    .g-relay.right { background:#16a34a; border-color:#86efac; }
+    .g-relay.wrong { background:#dc2626; border-color:#fca5a5; }
+    .g-relay.miss { background:transparent; border:2px solid #f59e0b; }
+    .g-beacon { width:110px; height:110px; border-radius:50%; margin:0 auto; transition:opacity .1s; }
+    .g-chan { width:190px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .g-bar { position:relative; width:46px; height:130px; border-radius:10px; border:1px solid #4c1d95; overflow:hidden; background:linear-gradient(to top,#7f1d1d 0 20%,#78350f 20% 35%,#14532d 35% 65%,#78350f 65% 80%,#7f1d1d 80% 100%); }
+    .g-bar i { position:absolute; left:0; right:0; height:4px; background:#fff; box-shadow:0 0 8px #fff; }
+    .g-opt { display:block; width:100%; text-align:left; padding:8px 12px; border-radius:10px; background:#1e1b4b; border:1px solid #4c1d95; color:#f3e8ff; font-size:.76rem; line-height:1.35; cursor:pointer; }
+    .g-opt:hover:not(:disabled) { border-color:#a855f7; background:#2e1065; }
+    .g-opt.good { background:#064e3b; border-color:#34d399; }
+    .g-opt.ok { background:#78350f; border-color:#f59e0b; }
+    .g-opt.bad { background:#7f1d1d; border-color:#ef4444; }
+    .g-scn { width:min(100%,640px); max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:7px; }
+    .g-scn-top { display:flex; justify-content:space-between; font:600 10.5px 'JetBrains Mono',monospace; color:#c084fc; }
+    .g-q { font-size:.82rem; font-weight:600; color:#fff; line-height:1.4; }
+    .g-fb { font-size:.74rem; color:#cbd5e1; line-height:1.4; min-height:1.2em; }
+    .g-timerbar { height:5px; border-radius:99px; background:#2e1065; overflow:hidden; }
+    .g-timerbar i { display:block; height:100%; background:linear-gradient(90deg,#7c3aed,#f59e0b); width:100%; }
+    body > header { background:rgba(5,14,27,.96)!important; border-color:rgba(133,160,190,.2)!important; }
+    body > header h1 { letter-spacing:.045em; }
+    body > header p { color:#9bb1c8!important; }
+    #search-input { background:#091827!important; border-color:#30445a!important; color:#e6edf5!important; }
+    #search-input::placeholder { color:#8297ad!important; }
+    #search-input:focus { border-color:#56a5c8!important; }
+    #category-bar .cat-btn { min-height:36px; padding:8px 12px!important; border:1px solid rgba(133,160,190,.2); border-radius:9px; font-size:12px!important; }
+    #category-bar .cat-btn[class*="bg-[#7c3aed]"] { background:#123752!important; border-color:#397e9c!important; color:#e7f4fb!important; }
+    #category-bar .cat-btn[class*="bg-[#2e1065]"] { background:#0b1b2c!important; color:#b6c8d9!important; }
+    #category-bar .cat-btn:hover { border-color:#4b91b0; }
+    main > section:first-child { border-color:rgba(112,155,190,.27)!important; }
+    main > section:first-child svg { opacity:.78; }
+    #hero-stars { opacity:.16; }
+    main > section:first-child .mono { color:#9cc8dc!important; }
+    main > section:first-child p { color:#c0cfdd!important; }
+    .exercise-card { background:rgba(10,23,39,.96)!important; border-color:rgba(119,151,180,.22)!important; }
+    .exercise-card:hover { border-color:#4b9fc2!important; }
+    .exercise-card h3 { color:#e8eff6!important; }
+    .exercise-card p { color:#b4c3d2!important; }
+    .exercise-card [class*="text-[#a78bfa]"] { color:#91b7ca!important; }
+    .exercise-card [class*="text-purple-100"] { color:#e3edf4!important; }
+    .exercise-card [class*="bg-[#2e1065]"] { background:#17334a!important; color:#c6d6e2!important; }
+    .exercise-card .card-art { border-color:rgba(119,151,180,.2)!important; }
+    .exercise-card .card-art > div:first-child { filter:saturate(.72); }
+    .exercise-card .start-overlay span { background:#176d91!important; }
+    #exercise-modal > div { background:#0b1929!important; border-color:#30465c!important; }
+    #exercise-modal > div > div:first-child { background:#10243a!important; border-color:#30465c!important; }
+    #exercise-modal > div > div:nth-child(2) { background:#0d1d30!important; border-color:#263b50!important; }
+    #modal-badge { background:#1b5872!important; }
+    #modal-id,#modal-hud { color:#9bc5d7!important; }
+    #btn-close-modal { background:#173750!important; color:#e3edf4!important; }
+    #btn-close-modal:hover { background:#20506d!important; }
+    #modal-stage { background:#081524!important; }
+    #modal-controls-hint,#modal-best-score { color:#a9bdcf!important; }
+    .g-card,.g-panel { background:#0d1c2d; border-color:#30465c; }
+    .g-kicker,.g-meta { color:#91c5dd; }
+    .g-btn { background:#176d91; }
+    .g-btn:hover { background:#125978; }
+    .g-btn.alt { background:#173b54; border-color:#416881; }
+    .g-btn.alt:hover { background:#1b4967; }
+    .g-cell,.g-num,.g-key,.g-opt { background:#10243a; border-color:#30465c; color:#dce7f1; }
+    .g-opt:hover:not(:disabled) { border-color:#4b9fc2; background:#17314a; }
+    footer { color:#8297ad!important; }
+  </style>
+  <script src="mission-soundtrack.js" defer></script>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="sticky top-0 z-30 bg-[#1e1b4b]/90 backdrop-blur-md border-b border-[#312e81] px-4 py-3">
+    <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">HALO · COGNITIVE REHABILITATION</h1>
+          <span class="hidden sm:inline-block text-[10px] mono font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#312e81] text-[#c084fc] border border-[#4c1d95]">25 Exercises</span>
+        </div>
+        <p class="text-[11px] text-[#a78bfa]">Astronaut cognitive &amp; sensorimotor rehabilitation programme</p>
+      </div>
+      <div class="flex items-center gap-2.5 flex-1 sm:flex-initial justify-end">
+        <a id="mission-dashboard-link" href="/#dashboard" target="_top"
+          class="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-[#6d5bd0] bg-[#2e1065] px-3 py-2 text-xs font-semibold text-[#f3e8ff] hover:bg-[#3b177d] transition"
+          aria-label="Return to the mission dashboard and its tabs">&larr; Mission Dashboard</a>
+        <input id="search-input" type="text" placeholder="Search exercises..."
+          class="w-full sm:w-64 bg-[#0f071e] border border-[#4c1d95] rounded-xl px-3.5 py-1.5 text-xs text-white placeholder-[#7c3aed] focus:outline-none focus:border-[#a855f7]" />
+      </div>
+    </div>
+    <div id="category-bar" class="max-w-[1440px] mx-auto mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1">
+      <button data-cat="ALL" class="cat-btn shrink-0 px-3 py-1 rounded-lg text-xs font-semibold bg-[#7c3aed] text-white transition">All Exercises</button>
+      <button data-cat="Reflex & Reaction" class="cat-btn shrink-0 px-3 py-1 rounded-lg text-xs font-semibold bg-[#2e1065] text-[#d8b4fe] hover:bg-[#3b0764] transition">Reflex &amp; Reaction</button>
+      <button data-cat="Motor & Coordination" class="cat-btn shrink-0 px-3 py-1 rounded-lg text-xs font-semibold bg-[#2e1065] text-[#d8b4fe] hover:bg-[#3b0764] transition">Motor &amp; Coordination</button>
+      <button data-cat="Spatial Orientation" class="cat-btn shrink-0 px-3 py-1 rounded-lg text-xs font-semibold bg-[#2e1065] text-[#d8b4fe] hover:bg-[#3b0764] transition">Spatial Orientation</button>
+      <button data-cat="Vigilance & Memory" class="cat-btn shrink-0 px-3 py-1 rounded-lg text-xs font-semibold bg-[#2e1065] text-[#d8b4fe] hover:bg-[#3b0764] transition">Vigilance &amp; Memory</button>
+      <button data-cat="Divided Attention & Ethics" class="cat-btn shrink-0 px-3 py-1 rounded-lg text-xs font-semibold bg-[#2e1065] text-[#d8b4fe] hover:bg-[#3b0764] transition">Divided Attention &amp; Protocol</button>
+    </div>
+  </header>
+  <script>
+    if (window.top !== window.self) {
+      const dashboardLink = document.getElementById('mission-dashboard-link');
+      if (dashboardLink) dashboardLink.remove();
+    }
+  </script>
+
+  <main class="max-w-[1440px] w-full mx-auto px-4 py-5 flex-1">
+    <section class="relative overflow-hidden rounded-2xl border border-[#4c1d95] mb-6">
+      <svg viewBox="0 0 1200 220" preserveAspectRatio="xMidYMid slice" class="absolute inset-0 w-full h-full" aria-hidden="true">
+        <defs>
+          <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#10243a"/><stop offset="1" stop-color="#183d56"/>
+          </linearGradient>
+          <radialGradient id="planet" cx="0.3" cy="0.3" r="0.8">
+            <stop offset="0" stop-color="#5a9db7"/><stop offset="1" stop-color="#15354b"/>
+          </radialGradient>
+        </defs>
+        <rect width="1200" height="220" fill="url(#hg)"/>
+        <g fill="#fff" opacity=".7" id="hero-stars"></g>
+        <circle cx="1020" cy="240" r="190" fill="url(#planet)"/>
+        <circle cx="1020" cy="240" r="190" fill="none" stroke="#e9d5ff" stroke-opacity=".35" stroke-width="2"/>
+        <ellipse cx="820" cy="60" rx="70" ry="14" fill="none" stroke="#9bc5d7" stroke-opacity=".4" transform="rotate(-18 820 60)"/>
+        <circle cx="820" cy="60" r="16" fill="#397f9c"/>
+      </svg>
+      <div class="relative z-10 px-6 py-8 sm:py-10 max-w-2xl">
+        <div class="mono text-[11px] uppercase tracking-widest text-[#c084fc] font-semibold">Daily Programme</div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1 leading-tight">Rebuild focus, balance and coordination after long-duration missions.</h2>
+        <p class="text-sm text-[#d8b4fe] mt-2">Twenty-five short guided exercises across five cognitive domains. Complete them at your own pace. Results are practice feedback, not a medical assessment.</p>
+        <p class="text-xs text-[#cbd5e1] mt-2">Completed scores are kept in the current dashboard session. Choose “Analyze with Yuki” to send the selected score and recent mission sample for an optional review.</p>
+      </div>
+    </section>
+
+    <div id="exercise-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+    <p id="empty-msg" class="hidden text-center text-sm text-[#a78bfa] py-16">No exercises match your search.</p>
+  </main>
+
+  <footer class="text-center text-[11px] mono text-[#7c3aed] py-5">HALO Cognitive Rehabilitation Portal</footer>
+
+  <!-- Exercise modal -->
+  <div id="exercise-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="bg-[#1e1b4b] border border-[#4c1d95] rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col">
+      <div class="bg-[#2e1065] border-b border-[#4c1d95] px-5 py-3.5 flex items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="modal-badge" class="text-[10px] mono font-bold uppercase px-2 py-0.5 rounded bg-[#7c3aed] text-white">DOMAIN</span>
+            <span id="modal-id" class="text-[11px] mono text-[#c084fc]">#01</span>
+          </div>
+          <h2 id="modal-title" class="text-base sm:text-lg font-bold text-white mt-0.5">Exercise Title</h2>
+        </div>
+        <button id="btn-close-modal" type="button" class="px-3 py-1.5 rounded-lg bg-[#3b0764] hover:bg-[#581c87] text-white text-xs font-bold mono transition">✕ CLOSE</button>
+      </div>
+      <div class="bg-[#171033] border-b border-[#312e81] px-5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <p id="modal-gist" class="text-[#e2e8f0] font-medium"></p>
+        <div class="mono text-[11px] text-[#c084fc] font-semibold" id="modal-hud">READY</div>
+      </div>
+      <div id="modal-stage" style="position:relative;width:100%;height:340px;background:#0f071e;padding:16px;overflow:hidden;user-select:none;box-sizing:border-box"></div>
+      <div class="bg-[#2e1065] border-t border-[#4c1d95] px-5 py-2.5 flex items-center justify-between text-[11px] mono text-[#c084fc]">
+        <span id="modal-controls-hint">Controls: Mouse / Touch / Spacebar</span>
+        <span id="modal-best-score">Best Score: --</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      /* =====================================================================
+       * EXERCISE CATALOGUE
+       * ===================================================================== */
+      const EXERCISES = [
+        // Reflex & Reaction
+        { id: 1, title: "Caution Alarm Response", domain: "Reflex & Reaction", aiLabel: "cognitive eyes training - reflex speed", gist: "Measures raw reaction speed in milliseconds when a single cabin caution light flashes green.", accent: "#7c3aed",
+          how: "Five trials. Wait for the light to turn green, then respond as fast as you can. Responding early counts as a false start.", hint: "Click / tap / SPACE" },
+        { id: 2, title: "Cabin Leak Sealing", domain: "Reflex & Reaction", aiLabel: "cognitive eyes training - target acquisition", gist: "Builds rapid target acquisition by sealing red hull breach points as fast as they appear.", accent: "#9333ea",
+          how: "For 30 seconds, red breach points appear on the hull panel. Seal each one before it vents.", hint: "Click / tap the red breach" },
+        { id: 3, title: "Solar Flare Response", domain: "Reflex & Reaction", aiLabel: "cognitive eyes training - go/no-go impulse", gist: "Trains impulse control: respond to solar flares, but hold back for harmless auroras.", accent: "#a855f7",
+          how: "Solar flares (orange) must be shielded: respond at once. Harmless auroras (green) must be ignored: do nothing. 30 trials.", hint: "SPACE or the SHIELD button" },
+        { id: 4, title: "Thruster Cutoff Timing", domain: "Reflex & Reaction", aiLabel: "cognitive eyes training - timing precision", gist: "Evaluates timing precision by stopping a rising gauge inside the narrow target line.", accent: "#c084fc",
+          how: "A burn gauge rises. Stop it inside the green band. Five rounds, each one a little faster.", hint: "Click / tap / SPACE to stop" },
+        { id: 5, title: "Airlock Direction Match", domain: "Reflex & Reaction", aiLabel: "cognitive eyes training - directional choice", gist: "Checks directional choice speed by pressing the matching arrow for each hatch vector.", accent: "#9333ea",
+          how: "An arrow shows the hatch vector. Press the same direction as quickly as you can. 15 trials.", hint: "Arrow keys or on-screen pad" },
+        // Motor & Coordination
+        { id: 6, title: "Supply Capsule Catch", domain: "Motor & Coordination", aiLabel: "cognitive eyes training - hand-eye interception", gist: "Trains lateral hand-eye interception by catching falling supply capsules with a collector bay.", accent: "#7c3aed",
+          how: "Slide the collector bay left and right to catch each falling capsule. 30 seconds.", hint: "Mouse / touch drag / ← →" },
+        { id: 7, title: "Debris Field Weaving", domain: "Motor & Coordination", aiLabel: "cognitive eyes training - evasive agility", gist: "Tests evasive agility by weaving a shuttle through drifting debris without contact.", accent: "#6d28d9",
+          how: "Steer the shuttle through drifting debris. Three hits end the session; survive 30 seconds for full marks.", hint: "Mouse / touch drag / arrow keys" },
+        { id: 8, title: "Robotic Arm Tracking", domain: "Motor & Coordination", aiLabel: "cognitive eyes training - cursor tracking", gist: "Measures steady-hand tracking by keeping a grapple dot inside a moving target ring.", accent: "#8b5cf6",
+          how: "Keep your grapple dot inside the moving target ring for 25 seconds. The ring slowly speeds up.", hint: "Move the mouse / drag" },
+        { id: 9, title: "Lander Hover Balance", domain: "Motor & Coordination", aiLabel: "cognitive eyes training - continuous balancing", gist: "Trains continuous thrust balancing by hovering a lander inside a safe altitude band.", accent: "#a855f7",
+          how: "Gravity pulls the lander down. Boost to keep it inside the drifting altitude band for 30 seconds.", hint: "Hold SPACE / mouse / touch" },
+        { id: 10, title: "Conduit Path Trace", domain: "Motor & Coordination", aiLabel: "cognitive eyes training - fine motor steadiness", gist: "Tests fine motor steadiness by guiding a probe along a winding path without touching walls.", accent: "#7c3aed",
+          how: "Press on the green start node and drag along the conduit to the gold end node without touching the walls.", hint: "Press and drag" },
+        // Spatial Orientation
+        { id: 11, title: "Horizon Levelling", domain: "Spatial Orientation", aiLabel: "cognitive eyes training - 3d roll orientation", gist: "Tests roll orientation by rotating a tilted artificial horizon back to 0.0°.", accent: "#9333ea",
+          how: "Rotate the artificial horizon back to level (0.0°) and hold it steady. Three rounds.", hint: "← → / A D / drag / buttons" },
+        { id: 12, title: "Mental Rotation Match", domain: "Spatial Orientation", aiLabel: "cognitive eyes training - mental rotation", gist: "Evaluates mental rotation by identifying which rotated blueprint matches the reference shape.", accent: "#6d28d9",
+          how: "Choose the option that is the SAME shape as the reference, only rotated. Mirror images are wrong. 8 rounds.", hint: "Click an option" },
+        { id: 13, title: "Docking Angle Estimation", domain: "Spatial Orientation", aiLabel: "cognitive eyes training - trajectory estimation", gist: "Trains angular estimation by aiming a tether probe into an angled docking port.", accent: "#8b5cf6",
+          how: "Click where you want the tether probe to fly. It travels in a straight line: hit the docking port. 6 shots.", hint: "Click to aim and fire" },
+        { id: 14, title: "Inverted Control Adaptation", domain: "Spatial Orientation", aiLabel: "cognitive eyes training - control adaptability", gist: "Tests adaptability when cockpit controls are flipped upside-down and reversed.", accent: "#a855f7",
+          how: "Collect the target markers. Your controls are inverted: up is down and left is right. 45 seconds.", hint: "Arrow keys / WASD / on-screen pad" },
+        { id: 15, title: "Star Grid Plotting", domain: "Spatial Orientation", aiLabel: "cognitive eyes training - 2d spatial mapping", gist: "Trains 2D spatial mapping by plotting exact (X, Y) star coordinates on a radar grid.", accent: "#7c3aed",
+          how: "Plot each star at the given (X, Y) coordinate by clicking the matching grid intersection. 8 rounds.", hint: "Click the grid" },
+        // Vigilance & Memory
+        { id: 16, title: "Radar Signal Watch", domain: "Vigilance & Memory", aiLabel: "cognitive eyes training - visual vigilance", gist: "Builds sustained visual vigilance by selecting rare golden blips while ignoring cyan decoys.", accent: "#a855f7",
+          how: "Click only the golden blips. Ignore cyan decoys. 40 seconds of sustained watch.", hint: "Click / tap the blips" },
+        { id: 17, title: "Telemetry Anomaly Scan", domain: "Vigilance & Memory", aiLabel: "cognitive eyes training - visual scanning speed", gist: "Trains scanning speed by spotting the one out-of-range readout in a dense data matrix.", accent: "#9333ea",
+          how: "One reading in the matrix is outside the nominal range. Find it as quickly as you can. 8 rounds.", hint: "Click the anomaly" },
+        { id: 18, title: "Keypad Sequence Recall", domain: "Vigilance & Memory", aiLabel: "cognitive eyes training - working memory recall", gist: "Tests sequential working memory by repeating illuminated override pads in exact order.", accent: "#7c3aed",
+          how: "Watch the keypad light up in sequence, then repeat it. The sequence grows by one each round.", hint: "Click pads / keys 1-9" },
+        { id: 19, title: "Circuit Grid Memory", domain: "Vigilance & Memory", aiLabel: "cognitive eyes training - spatial pattern memory", gist: "Evaluates spatial pattern memory by recalling which relays lit up after a 2-second flash.", accent: "#6d28d9",
+          how: "Memorise which relays flash, then select them from memory. 5 rounds with more relays each time.", hint: "Click the relays" },
+        { id: 20, title: "Orbital Beacon N-Back", domain: "Vigilance & Memory", aiLabel: "cognitive eyes training - continuous memory updating", gist: "Tests working memory updating: flag whenever the current beacon matches the one 2 steps ago.", accent: "#8b5cf6",
+          how: "Beacons appear one at a time. Press MATCH whenever the current beacon is the same as the one two steps back.", hint: "SPACE or the MATCH button" },
+        // Divided Attention & Ethics
+        { id: 21, title: "Dual-Task Docking", domain: "Divided Attention & Ethics", aiLabel: "cognitive eyes training - split attention", gist: "Tests split attention by holding centre alignment while clearing peripheral caution lights.", accent: "#9333ea",
+          how: "Keep the ship inside the centre ring with the arrow keys while clicking amber caution lights as they appear at the corners.", hint: "Arrows / WASD + click lights" },
+        { id: 22, title: "Life Support Balancing", domain: "Divided Attention & Ethics", aiLabel: "cognitive eyes training - resource management", gist: "Trains multi-channel management by keeping O2, CO2 and thermal bars out of the red zone.", accent: "#7c3aed",
+          how: "Keep O2, CO2 and cabin temperature inside the green zones. Use the controls to counter the drift. 45 seconds.", hint: "Buttons or keys Q W E R" },
+        { id: 23, title: "Colour-Word Override", domain: "Divided Attention & Ethics", aiLabel: "cognitive eyes training - cognitive interference", gist: "Tests interference control by selecting the INK COLOUR of a caution word, ignoring its text.", accent: "#a855f7",
+          how: "Select the INK colour the word is printed in, not the word itself. 20 trials.", hint: "Buttons or keys R B G Y" },
+        { id: 24, title: "Crew Judgment Scenarios", domain: "Divided Attention & Ethics", aiLabel: "cognitive eyes training - operational judgment", gist: "Evaluates calm judgment and rule adherence during cabin emergencies and crew fatigue.", accent: "#6d28d9",
+          how: "Six crew scenarios. Choose the response that best follows crew safety protocol.", hint: "Click an option" },
+        { id: 25, title: "Flight Director Protocol", domain: "Divided Attention & Ethics", aiLabel: "cognitive eyes training - crisis decision-making", gist: "Tests command decisions under debris threats, comm blackouts and hardware faults.", accent: "#8b5cf6",
+          how: "Six crisis scenarios under time pressure (20 seconds each). Choose the best command decision before time runs out.", hint: "Click an option" }
+      ];
+
+      let activeCategory = "ALL";
+      let searchQuery = "";
+      let scoresMap = {};
+      let activeCleanup = null;
+
+      const $ = (id) => document.getElementById(id);
+      const gridEl = $("exercise-grid");
+      const searchInput = $("search-input");
+      const modalEl = $("exercise-modal");
+      const modalStage = $("modal-stage");
+      const modalHud = $("modal-hud");
+
+      /* ---------- small utilities ---------- */
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+      const rand = (a, b) => a + Math.random() * (b - a);
+      const randi = (a, b) => Math.floor(rand(a, b + 1));
+      const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      const avg = (arr) => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+      function shuffle(a) {
+        a = a.slice();
+        for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+        return a;
+      }
+
+      /* ---------- simple illustrated images (inline SVG) ---------- */
+      function seeded(seed) {
+        let s = seed;
+        return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+      }
+      function stars(seed, n, w, h) {
+        const r = seeded(seed);
+        let out = "";
+        for (let i = 0; i < n; i++) {
+          out += `<circle cx="${(r() * w).toFixed(1)}" cy="${(r() * h).toFixed(1)}" r="${(r() * 1.1 + 0.3).toFixed(2)}" fill="#fff" opacity="${(0.3 + r() * 0.6).toFixed(2)}"/>`;
+        }
+        return out;
+      }
+      function motif(m) {
+        const r = seeded(m.id * 13 + 7);
+        const a = m.accent;
+        const x = 70 + r() * 100, y = 35 + r() * 40;
+        switch (m.domain) {
+          case "Reflex & Reaction":
+            return `<circle cx="${x}" cy="${y}" r="38" fill="none" stroke="${a}" stroke-opacity=".25" stroke-width="2"/>
+                    <circle cx="${x}" cy="${y}" r="24" fill="none" stroke="${a}" stroke-opacity=".5" stroke-width="2"/>
+                    <circle cx="${x}" cy="${y}" r="10" fill="${a}"/>
+                    <circle cx="${x}" cy="${y}" r="4" fill="#fff"/>`;
+          case "Motor & Coordination":
+            return `<path d="M10 90 C 70 ${20 + r() * 30}, 150 ${100 - r() * 30}, 230 25" fill="none" stroke="${a}" stroke-width="3" stroke-dasharray="6 6" stroke-opacity=".8"/>
+                    <circle cx="${x}" cy="${y}" r="16" fill="none" stroke="#e9d5ff" stroke-width="2"/>
+                    <circle cx="${x}" cy="${y}" r="6" fill="${a}"/>
+                    <rect x="200" y="14" width="20" height="20" rx="5" fill="${a}" opacity=".8"/>`;
+          case "Spatial Orientation": {
+            const ang = -20 + r() * 40;
+            return `<g stroke="${a}" stroke-opacity=".25">${[40, 80, 120, 160, 200].map(v => `<line x1="${v}" y1="0" x2="${v}" y2="110"/>`).join("")}${[28, 55, 82].map(v => `<line x1="0" y1="${v}" x2="240" y2="${v}"/>`).join("")}</g>
+                    <g transform="rotate(${ang.toFixed(1)} 120 55)">
+                      <rect x="-40" y="55" width="320" height="80" fill="${a}" opacity=".35"/>
+                      <line x1="-40" y1="55" x2="280" y2="55" stroke="#e9d5ff" stroke-width="2"/>
+                    </g>
+                    <path d="M100 55 H140 M120 45 V65" stroke="#fff" stroke-width="2"/>`;
+          }
+          case "Vigilance & Memory": {
+            let blips = "";
+            for (let i = 0; i < 4; i++) {
+              const ang = r() * Math.PI * 2, d = 10 + r() * 38;
+              blips += `<circle cx="${(120 + Math.cos(ang) * d).toFixed(1)}" cy="${(55 + Math.sin(ang) * d * 0.9).toFixed(1)}" r="3" fill="${i === 0 ? "#fbbf24" : "#22d3ee"}"/>`;
+            }
+            return `<circle cx="120" cy="55" r="48" fill="none" stroke="${a}" stroke-opacity=".5" stroke-width="2"/>
+                    <circle cx="120" cy="55" r="28" fill="none" stroke="${a}" stroke-opacity=".35" stroke-width="1.5"/>
+                    <path d="M120 55 L168 55 A48 48 0 0 0 150 17 Z" fill="${a}" opacity=".4"/>
+                    <line x1="72" y1="55" x2="168" y2="55" stroke="${a}" stroke-opacity=".4"/>${blips}`;
+          }
+          default:
+            return `<rect x="14" y="16" width="100" height="78" rx="10" fill="none" stroke="${a}" stroke-width="2"/>
+                    <rect x="126" y="16" width="100" height="78" rx="10" fill="none" stroke="#e9d5ff" stroke-opacity=".5" stroke-width="2"/>
+                    <circle cx="${40 + r() * 48}" cy="${34 + r() * 40}" r="8" fill="${a}"/>
+                    <circle cx="${150 + r() * 50}" cy="${34 + r() * 40}" r="8" fill="#fbbf24"/>
+                    <path d="M120 10 V100" stroke="#fff" stroke-opacity=".15" stroke-dasharray="3 4"/>`;
+        }
+      }
+      function artwork(m) {
+        return `<svg viewBox="0 0 240 110" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+          <defs><linearGradient id="g${m.id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#171033"/><stop offset="1" stop-color="${m.accent}" stop-opacity=".55"/></linearGradient></defs>
+          <rect width="240" height="110" fill="url(#g${m.id})"/>
+          ${stars(m.id * 31, 22, 240, 110)}
+          ${motif(m)}
+        </svg>`;
+      }
+      (function () {
+        const g = $("hero-stars");
+        const r = seeded(99);
+        let s = "";
+        for (let i = 0; i < 70; i++) s += `<circle cx="${(r() * 1200).toFixed(0)}" cy="${(r() * 220).toFixed(0)}" r="${(r() * 1.4 + 0.4).toFixed(2)}"/>`;
+        g.innerHTML = s;
+      })();
+
+      /* =====================================================================
+       * EXERCISE RUNTIME
+       * ===================================================================== */
+      function makeCtx(mod) {
+        const cleanups = [];
+        let ended = false;
+        modalStage.innerHTML = '<div class="stage-inner"></div>';
+        const root = modalStage.firstElementChild;
+        const ctx = {
+          mod, root,
+          hud(t) { modalHud.textContent = t; },
+          art() { modalStage.insertAdjacentHTML("afterbegin", `<div class="stage-art">${artwork(mod)}</div>`); },
+          on(t, ev, fn, opts) { t.addEventListener(ev, fn, opts); cleanups.push(() => t.removeEventListener(ev, fn, opts)); },
+          onDispose(fn) { cleanups.push(fn); },
+          after(fn, ms) { const id = setTimeout(fn, ms); cleanups.push(() => clearTimeout(id)); return id; },
+          every(fn, ms) { const id = setInterval(fn, ms); cleanups.push(() => clearInterval(id)); return id; },
+          loop(fn) {
+            let alive = true, id, last = performance.now();
+            const f = (t) => {
+              if (!alive) return;
+              const dt = Math.min(0.05, (t - last) / 1000); last = t;
+              fn(dt);
+              if (alive) id = requestAnimationFrame(f);
+            };
+            id = requestAnimationFrame(f);
+            cleanups.push(() => { alive = false; cancelAnimationFrame(id); });
+          },
+          keys() {
+            const k = {};
+            ctx.on(document, "keydown", (e) => { k[e.code] = true; });
+            ctx.on(document, "keyup", (e) => { k[e.code] = false; });
+            ctx.on(window, "blur", () => { for (const x in k) k[x] = false; });
+            return k;
+          },
+          press(el, fn) {
+            ctx.on(el, "pointerdown", (e) => { e.preventDefault(); fn(e); });
+            ctx.on(el, "mousedown", (e) => e.preventDefault());
+          },
+          hold(el, fn) {
+            ctx.on(el, "pointerdown", (e) => { e.preventDefault(); fn(true); });
+            ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => ctx.on(el, ev, () => fn(false)));
+            ctx.on(el, "mousedown", (e) => e.preventDefault());
+          },
+          canvas(w, h) {
+            const dpr = Math.min(2, window.devicePixelRatio || 1);
+            const c = document.createElement("canvas");
+            c.width = w * dpr; c.height = h * dpr; c.className = "g-canvas";
+            c.style.width = `min(100%, ${w}px)`; c.style.aspectRatio = `${w} / ${h}`; c.style.height = "auto";
+            root.appendChild(c);
+            const g = c.getContext("2d");
+            g.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const pos = (e) => { const r = c.getBoundingClientRect(); return { x: (e.clientX - r.left) * w / r.width, y: (e.clientY - r.top) * h / r.height }; };
+            return { c, g, w, h, pos };
+          },
+          end(score, detail) {
+            if (ended) return;
+            ended = true;
+            score = clamp(Math.round(score), 0, 100);
+            ctx.dispose();
+            recordScore(mod.id, score);
+            const label = score >= 85 ? "Excellent" : score >= 65 ? "Good" : score >= 40 ? "Fair" : "Keep practising";
+            const report = {
+              schema: "halo-rehabilitation-result.v1",
+              sessionId: `rehab-${mod.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+              exerciseId: mod.id,
+              game: mod.title,
+              domain: mod.domain,
+              completedAt: new Date().toISOString(),
+              score,
+              scoreOutOf10: Number((score / 10).toFixed(1)),
+              detail: String(detail || "").slice(0, 240)
+            };
+            window.parent.postMessage({ type: "halo-rehab-complete", result: report }, window.location.origin);
+            modalStage.innerHTML = `<div class="stage-art">${artwork(mod)}</div><div class="stage-inner"><div class="g-card">
+              <div class="g-kicker">Exercise complete</div>
+              <div class="g-score">${(score / 10).toFixed(1)}<span>/ 10</span></div>
+              <div class="g-meta">Raw game score: ${score}/100</div>
+              <div class="g-rating">${label}</div>
+              <p class="g-how">${detail || ""}</p>
+              <div class="g-row"><button class="g-btn" data-retry>Try again</button><button class="g-btn alt" data-close>Close</button></div>
+              <div class="g-row"><button class="g-btn alt" data-download>Download JSON</button><button class="g-btn" data-analyze>Analyze with Yuki</button></div>
+              <p class="g-how" data-status>Yuki receives this score and the recent 15-day mission summary. Participant-entered daily readings are excluded unless enabled in the Yuki panel.</p>
+            </div></div>`;
+            modalStage.querySelector("[data-retry]").addEventListener("click", () => beginRun(mod));
+            modalStage.querySelector("[data-close]").addEventListener("click", closeModal);
+            modalStage.querySelector("[data-download]").addEventListener("click", () => {
+              const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = `halo-rehabilitation-${mod.id}-${report.completedAt.slice(0, 10)}.json`;
+              link.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            });
+            modalStage.querySelector("[data-analyze]").addEventListener("click", () => {
+              if (window.parent === window) {
+                modalStage.querySelector("[data-status]").textContent = "Open rehabilitation from Cognitive Tasks in the dashboard to send this result to Yuki, or download the JSON and upload it in chat.";
+                return;
+              }
+              window.parent.postMessage({ type: "halo-rehab-analyze", result: report }, window.location.origin);
+            });
+            modalStage.querySelector("[data-retry]").focus();
+            modalHud.textContent = `SCORE: ${(score / 10).toFixed(1)}/10`;
+          },
+          dispose() { cleanups.splice(0).forEach((f) => { try { f(); } catch (e) { /* ignore */ } }); }
+        };
+        return ctx;
+      }
+
+      function showIntro(m) {
+        const ctx = makeCtx(m);
+        activeCleanup = ctx.dispose;
+        ctx.art();
+        ctx.root.innerHTML = `<div class="g-card">
+            <div class="g-kicker">${m.aiLabel}</div>
+            <div class="g-title">${m.title}</div>
+            <p class="g-how">${m.how}</p>
+            <div class="g-meta">Controls: ${m.hint}</div>
+            <button class="g-btn" data-start>Start exercise</button>
+          </div>`;
+        const b = ctx.root.querySelector("[data-start]");
+        b.addEventListener("click", () => beginRun(m));
+        b.focus();
+      }
+
+      function beginRun(m) {
+        if (typeof activeCleanup === "function") { activeCleanup(); activeCleanup = null; }
+        const ctx = makeCtx(m);
+        activeCleanup = ctx.dispose;
+        ctx.hud("GO");
+        try {
+          GAMES[m.id](ctx);
+        } catch (err) {
+          console.error(err);
+          ctx.root.innerHTML = `<div class="g-card"><div class="g-title">Exercise unavailable</div><p class="g-how">${String(err && err.message || err)}</p></div>`;
+        }
+      }
+
+      function renderGrid() {
+        const q = searchQuery.toLowerCase().trim();
+        const list = EXERCISES.filter((m) => {
+          const okCat = activeCategory === "ALL" || m.domain === activeCategory;
+          const okSearch = !q || [m.title, m.domain, m.aiLabel, m.gist].some((t) => t.toLowerCase().includes(q));
+          return okCat && okSearch;
+        });
+        $("empty-msg").classList.toggle("hidden", list.length > 0);
+        gridEl.innerHTML = list.map((m) => {
+          const best = scoresMap[m.id];
+          const status = best !== undefined
+            ? `<span class="mono text-[10px] font-bold px-2 py-0.5 rounded bg-[#064e3b] text-[#34d399]">DONE · ${best}</span>`
+            : `<span class="mono text-[10px] font-semibold px-2 py-0.5 rounded bg-[#2e1065]/90 text-[#e9d5ff]">READY</span>`;
+          return `
+            <article data-id="${m.id}" class="exercise-card cursor-pointer bg-[#1e1b4b]/90 border border-[#312e81] rounded-2xl overflow-hidden flex flex-col shadow-sm">
+              <div class="card-art relative h-32 overflow-hidden border-b border-[#312e81]">
+                <div class="absolute inset-0">${artwork(m)}</div>
+                <div class="relative z-10 h-full p-2.5 flex flex-col justify-between bg-gradient-to-t from-black/50 via-transparent to-black/20">
+                  <div class="flex items-center justify-between">
+                    <span class="mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#0f071e]/90 text-white">#${String(m.id).padStart(2, "0")}</span>
+                    ${status}
+                  </div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-purple-100 drop-shadow">${m.domain}</span>
+                </div>
+                <div class="start-overlay opacity-0 transition-opacity duration-150 absolute inset-0 bg-[#0f071e]/80 flex items-center justify-center z-20">
+                  <span class="px-4 py-1.5 rounded-full bg-[#7c3aed] text-white font-bold text-xs tracking-wide shadow-lg">START EXERCISE</span>
+                </div>
+              </div>
+              <div class="p-4 flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="text-[9.5px] mono font-bold uppercase text-[#a78bfa] tracking-wider mb-1">${m.aiLabel}</div>
+                  <h3 class="text-sm font-bold text-white leading-snug">${m.title}</h3>
+                  <p class="text-[12px] text-[#cbd5e1] leading-relaxed mt-1.5">${m.gist}</p>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-[#312e81] flex items-center justify-between text-[10.5px] mono text-[#a78bfa]">
+                  <span>~1 MIN SESSION</span>
+                  <span class="text-white font-semibold">BEGIN →</span>
+                </div>
+              </div>
+            </article>`;
+        }).join("");
+        gridEl.querySelectorAll(".exercise-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            const mod = EXERCISES.find((x) => x.id === parseInt(card.dataset.id, 10));
+            if (mod) openExercise(mod);
+          });
+        });
+      }
+
+      function recordScore(id, score) {
+        const prev = scoresMap[id] || 0;
+        if (scoresMap[id] === undefined || score >= prev) scoresMap[id] = score;
+        $("modal-best-score").textContent = `Best Score: ${scoresMap[id]}`;
+        renderGrid();
+      }
+
+      function closeModal() {
+        if (typeof activeCleanup === "function") { activeCleanup(); activeCleanup = null; }
+        modalStage.innerHTML = "";
+        modalEl.classList.add("hidden");
+      }
+      $("btn-close-modal").addEventListener("click", closeModal);
+      modalEl.addEventListener("click", (e) => { if (e.target === modalEl) closeModal(); });
+      document.addEventListener("keydown", (e) => {
+        if (modalEl.classList.contains("hidden")) return;
+        if (e.key === "Escape") { closeModal(); return; }
+        const tag = e.target && e.target.tagName;
+        if (/INPUT|TEXTAREA|BUTTON/.test(tag || "")) return;
+        if ([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
+      });
+
+      function openExercise(m) {
+        if (typeof activeCleanup === "function") { activeCleanup(); activeCleanup = null; }
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+        const badge = $("modal-badge");
+        badge.textContent = m.domain;
+        badge.style.backgroundColor = m.accent;
+        $("modal-id").textContent = `EXERCISE #${String(m.id).padStart(2, "0")}`;
+        $("modal-title").textContent = m.title;
+        $("modal-gist").textContent = `${m.aiLabel.toUpperCase()} — ${m.gist}`;
+        $("modal-hud").textContent = "READY";
+        $("modal-controls-hint").textContent = `Controls: ${m.hint}`;
+        $("modal-best-score").textContent = `Best Score: ${scoresMap[m.id] !== undefined ? scoresMap[m.id] : "--"}`;
+        modalEl.classList.remove("hidden");
+        showIntro(m);
+      }
+
+      document.querySelectorAll(".cat-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".cat-btn").forEach((b) => {
+            b.classList.remove("bg-[#7c3aed]", "text-white");
+            b.classList.add("bg-[#2e1065]", "text-[#d8b4fe]");
+          });
+          btn.classList.remove("bg-[#2e1065]", "text-[#d8b4fe]");
+          btn.classList.add("bg-[#7c3aed]", "text-white");
+          activeCategory = btn.dataset.cat;
+          renderGrid();
+        });
+      });
+      searchInput.addEventListener("input", (e) => { searchQuery = e.target.value; renderGrid(); });
+
+      /* =====================================================================
+       * THE 25 EXERCISES
+       * ===================================================================== */
+      const GAMES = {};
+
+      /* ---------- 1. Caution Alarm Response ---------- */
+      GAMES[1] = (ctx) => {
+        const R = ctx.root, TR = 5;
+        let trial = 0, state = "idle", t0 = 0, fouls = 0, timer = null;
+        const times = [];
+        R.innerHTML = `<div class="g-panel"><div class="g-light"></div><div class="g-big">WAIT…</div><div class="g-prompt"></div></div>`;
+        const P = R.querySelector(".g-panel"), L = R.querySelector(".g-light"), T = R.querySelector(".g-big"), S = R.querySelector(".g-prompt");
+        function arm() {
+          state = "wait"; L.className = "g-light"; T.textContent = "WAIT…";
+          S.textContent = `Trial ${trial + 1} of ${TR} · respond when the light turns green`;
+          ctx.hud(`TRIAL ${trial + 1}/${TR}`);
+          timer = ctx.after(() => { state = "go"; L.className = "g-light green"; T.textContent = "NOW!"; t0 = performance.now(); }, rand(1200, 3500));
+        }
+        function respond() {
+          if (state === "wait") {
+            clearTimeout(timer); fouls++; state = "pause"; T.textContent = "TOO EARLY"; S.textContent = "False start. Wait for green.";
+            ctx.after(arm, 1000);
+          } else if (state === "go") {
+            const rt = performance.now() - t0; times.push(rt); state = "pause";
+            T.textContent = `${Math.round(rt)} ms`; L.className = "g-light"; trial++;
+            if (trial >= TR) ctx.after(finish, 900); else ctx.after(arm, 1000);
+          }
+        }
+        function finish() {
+          const a = avg(times);
+          ctx.end(clamp((600 - a) / 4, 0, 100) - fouls * 5, `Average reaction time ${Math.round(a)} ms · best ${Math.round(Math.min(...times))} ms · ${fouls} false start${fouls === 1 ? "" : "s"}`);
+        }
+        ctx.press(P, respond);
+        ctx.on(document, "keydown", (e) => { if (e.code === "Space" && !e.repeat) { e.preventDefault(); respond(); } });
+        arm();
+      };
+
+      /* ---------- 2. Cabin Leak Sealing ---------- */
+      GAMES[2] = (ctx) => {
+        const R = ctx.root, DUR = 30;
+        let el = 0, hits = 0, missed = 0, spawned = 0, over = false;
+        R.innerHTML = `<div class="g-prompt">Seal each red breach before it vents.</div><div class="g-grid" style="grid-template-columns:repeat(4,1fr);width:min(100%,520px)"></div>`;
+        const grid = R.querySelector(".g-grid"), cells = [], live = new Map();
+        ctx.onDispose(() => live.forEach((id) => clearTimeout(id)));
+        for (let i = 0; i < 12; i++) {
+          const b = document.createElement("button");
+          b.className = "g-cell"; b.tabIndex = -1; grid.appendChild(b); cells.push(b);
+          ctx.press(b, () => {
+            if (!live.has(i)) return;
+            clearTimeout(live.get(i)); live.delete(i);
+            b.classList.remove("leak"); b.classList.add("sealed"); hits++;
+            setTimeout(() => b.classList.remove("sealed"), 180);
+          });
+        }
+        function spawn() {
+          if (over) return;
+          const free = cells.map((_, i) => i).filter((i) => !live.has(i));
+          if (!free.length) return;
+          const i = pick(free); spawned++;
+          cells[i].classList.add("leak");
+          const life = Math.max(650, 1300 - el * 14);
+          live.set(i, setTimeout(() => { live.delete(i); cells[i].classList.remove("leak"); missed++; }, life));
+        }
+        ctx.every(spawn, 800);
+        ctx.every(() => {
+          el += 0.25;
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - el))}s · SEALED ${hits}`);
+          if (el >= DUR && !over) {
+            over = true;
+            ctx.after(() => ctx.end(spawned ? hits / spawned * 100 : 0, `${hits} of ${spawned} breaches sealed · ${missed} vented`), 1450);
+          }
+        }, 250);
+      };
+
+      /* ---------- 3. Solar Flare Response (Go / No-Go) ---------- */
+      GAMES[3] = (ctx) => {
+        const R = ctx.root, N = 30;
+        let i = 0, correct = 0, flares = 0, flareHits = 0, falseAlarms = 0, cur = null, open = false, pressed = false;
+        R.innerHTML = `<div class="g-prompt">Shield flares. Ignore auroras.</div><div class="g-orb idle"></div><div class="g-prompt" data-lbl>&nbsp;</div><button class="g-btn" tabindex="-1">SHIELD</button>`;
+        const orb = R.querySelector(".g-orb"), lbl = R.querySelector("[data-lbl]"), btn = R.querySelector(".g-btn");
+        function next() {
+          if (i >= N) { finish(); return; }
+          cur = Math.random() < 0.7 ? "flare" : "aurora"; i++; pressed = false; open = true;
+          orb.className = `g-orb ${cur}`; lbl.textContent = cur === "flare" ? "SOLAR FLARE" : "AURORA";
+          ctx.hud(`TRIAL ${i}/${N}`);
+          ctx.after(() => {
+            open = false;
+            if (cur === "flare") { flares++; if (pressed) { correct++; flareHits++; } }
+            else if (!pressed) correct++; else falseAlarms++;
+            orb.className = "g-orb idle"; lbl.innerHTML = "&nbsp;";
+            ctx.after(next, 450);
+          }, 900);
+        }
+        function press() { if (open && !pressed) { pressed = true; orb.style.opacity = ".55"; ctx.after(() => (orb.style.opacity = "1"), 120); } }
+        function finish() {
+          ctx.end(correct / N * 100, `${flareHits} of ${flares} flares shielded · ${falseAlarms} false alarm${falseAlarms === 1 ? "" : "s"} on auroras`);
+        }
+        ctx.press(btn, press);
+        ctx.on(document, "keydown", (e) => { if (e.code === "Space" && !e.repeat) { e.preventDefault(); press(); } });
+        ctx.after(next, 800);
+      };
+
+      /* ---------- 4. Thruster Cutoff Timing ---------- */
+      GAMES[4] = (ctx) => {
+        const R = ctx.root, ROUNDS = 5;
+        let round = 0, pos = 0, center = 0, state = "idle", speed = 0;
+        const scores = [], errs = [];
+        R.innerHTML = `<div class="g-prompt"></div><div class="g-gauge"><div class="g-gauge-band"></div><div class="g-gauge-fill"></div></div><div class="g-big">&nbsp;</div><div class="g-prompt" style="color:#a78bfa">Stop the gauge inside the green band</div>`;
+        const P = R.querySelector(".g-prompt"), band = R.querySelector(".g-gauge-band"), fill = R.querySelector(".g-gauge-fill"), B = R.querySelector(".g-big");
+        function startRound() {
+          pos = 0; speed = 45 + round * 13; center = rand(42, 88); state = "run";
+          band.style.left = `${center - 3}%`; band.style.width = "6%"; fill.style.width = "0%"; B.innerHTML = "&nbsp;";
+          P.textContent = `Round ${round + 1} of ${ROUNDS}`; ctx.hud(`ROUND ${round + 1}/${ROUNDS}`);
+        }
+        function stop(miss) {
+          if (state !== "run") return;
+          state = "pause";
+          const d = Math.abs(pos - center);
+          const s = miss ? 0 : d <= 3 ? 100 : Math.max(0, 100 - (d - 3) * 6);
+          scores.push(s); errs.push(d);
+          B.textContent = miss ? "OVERBURN" : d <= 3 ? "PERFECT" : `${d.toFixed(1)} off`;
+          round++;
+          ctx.after(() => (round >= ROUNDS ? ctx.end(avg(scores), `Average error ${avg(errs).toFixed(1)} gauge units over ${ROUNDS} rounds`) : startRound()), 1100);
+        }
+        ctx.loop((dt) => {
+          if (state !== "run") return;
+          pos += speed * dt; fill.style.width = `${Math.min(100, pos)}%`;
+          if (pos >= 100) { pos = 100; stop(true); }
+        });
+        ctx.press(R, () => stop(false));
+        ctx.on(document, "keydown", (e) => { if (e.code === "Space" && !e.repeat) stop(false); });
+        ctx.after(startRound, 500);
+      };
+
+      /* ---------- 5. Airlock Direction Match ---------- */
+      GAMES[5] = (ctx) => {
+        const R = ctx.root, N = 15;
+        const DIRS = { up: "↑", down: "↓", left: "←", right: "→" };
+        const KEYS = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
+        let i = 0, correct = 0, cur = null, t0 = 0, open = false;
+        const rts = [];
+        R.innerHTML = `<div class="g-prompt"></div><div class="g-arrow">&nbsp;</div><div class="g-pad"><button class="g-btn alt u" data-d="up">↑</button><button class="g-btn alt l" data-d="left">←</button><button class="g-btn alt d" data-d="down">↓</button><button class="g-btn alt r" data-d="right">→</button></div>`;
+        const P = R.querySelector(".g-prompt"), A = R.querySelector(".g-arrow");
+        function next() {
+          if (i >= N) { finish(); return; }
+          cur = pick(Object.keys(DIRS)); i++;
+          A.textContent = DIRS[cur]; A.style.color = "#c084fc"; P.textContent = `Hatch vector ${i} of ${N}`; ctx.hud(`TRIAL ${i}/${N}`);
+          t0 = performance.now(); open = true;
+        }
+        function answer(d) {
+          if (!open) return;
+          open = false;
+          const rt = performance.now() - t0;
+          if (d === cur) { correct++; rts.push(rt); A.style.color = "#34d399"; } else A.style.color = "#ef4444";
+          ctx.after(() => { A.innerHTML = "&nbsp;"; ctx.after(next, 220); }, 260);
+        }
+        function finish() {
+          const a = avg(rts) || 1000, sf = clamp((1000 - a) / 700, 0, 1);
+          ctx.end(correct / N * 100 * (0.6 + 0.4 * sf), `${correct} of ${N} correct · average response ${Math.round(a)} ms`);
+        }
+        R.querySelectorAll("[data-d]").forEach((b) => ctx.press(b, () => answer(b.dataset.d)));
+        ctx.on(document, "keydown", (e) => { if (KEYS[e.code]) { e.preventDefault(); answer(KEYS[e.code]); } });
+        ctx.after(next, 600);
+      };
+
+      /* ---------- 6. Supply Capsule Catch ---------- */
+      GAMES[6] = (ctx) => {
+        const cv = ctx.canvas(640, 270), { g, w, h } = cv, DUR = 30, BW = 84, BY = h - 26;
+        let t = 0, bayX = w / 2, caught = 0, resolved = 0, spawnT = 0.5, rockets = [];
+        const K = ctx.keys();
+        const move = (e) => { bayX = clamp(cv.pos(e).x, BW / 2, w - BW / 2); };
+        ctx.on(cv.c, "pointermove", move); ctx.on(cv.c, "pointerdown", move);
+        const sky = g.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, "#0b0520"); sky.addColorStop(1, "#2e1065");
+        const bgStars = stars(5, 30, w, h);
+        ctx.loop((dt) => {
+          t += dt;
+          if (K.ArrowLeft || K.KeyA) bayX -= 430 * dt;
+          if (K.ArrowRight || K.KeyD) bayX += 430 * dt;
+          bayX = clamp(bayX, BW / 2, w - BW / 2);
+          spawnT -= dt;
+          if (spawnT <= 0 && t < DUR - 2) { rockets.push({ x: rand(24, w - 24), y: -20, v: rand(130, 200) + t * 2.5 }); spawnT = Math.max(0.5, 0.9 - t * 0.012); }
+          rockets.forEach((r) => (r.y += r.v * dt));
+          rockets = rockets.filter((r) => {
+            if (r.y >= BY - 10 && r.y <= BY + 14 && Math.abs(r.x - bayX) <= BW / 2 + 4) { caught++; resolved++; return false; }
+            if (r.y > h + 20) { resolved++; return false; }
+            return true;
+          });
+          g.fillStyle = sky; g.fillRect(0, 0, w, h);
+          g.fillStyle = "rgba(255,255,255,.6)";
+          for (let i = 0; i < 30; i++) { g.fillRect((i * 97) % w, (i * 53 + t * 8) % h, 1.5, 1.5); }
+          rockets.forEach((r) => {
+            g.save(); g.translate(r.x, r.y);
+            g.fillStyle = "#fb923c"; g.beginPath(); g.moveTo(-4, -8); g.lineTo(0, -22); g.lineTo(4, -8); g.fill();
+            g.fillStyle = "#e9d5ff"; g.beginPath(); g.ellipse(0, 0, 6, 12, 0, 0, Math.PI * 2); g.fill();
+            g.fillStyle = "#a855f7"; g.beginPath(); g.moveTo(-6, 10); g.lineTo(0, 17); g.lineTo(6, 10); g.fill();
+            g.restore();
+          });
+          g.fillStyle = "#7c3aed"; g.fillRect(bayX - BW / 2, BY, BW, 10);
+          g.fillStyle = "#c084fc"; g.fillRect(bayX - BW / 2, BY - 8, 6, 18); g.fillRect(bayX + BW / 2 - 6, BY - 8, 6, 18);
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - t))}s · CAUGHT ${caught}`);
+          if (t >= DUR && rockets.length === 0) ctx.end(resolved ? caught / resolved * 100 : 0, `${caught} of ${resolved} capsules caught`);
+        });
+      };
+
+      /* ---------- 7. Debris Field Weaving ---------- */
+      GAMES[7] = (ctx) => {
+        const cv = ctx.canvas(640, 270), { g, w, h } = cv, DUR = 30;
+        let t = 0, sx = w / 2, sy = h - 50, tx = sx, ty = sy, hits = 0, inv = 0, spawnT = 0.3, rocks = [];
+        const K = ctx.keys();
+        const move = (e) => { const p = cv.pos(e); tx = clamp(p.x, 12, w - 12); ty = clamp(p.y, 12, h - 12); };
+        ctx.on(cv.c, "pointermove", move); ctx.on(cv.c, "pointerdown", move);
+        function makeRock() {
+          const r = rand(10, 22), n = 9, verts = [];
+          for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, rr = r * rand(0.75, 1.1); verts.push([Math.cos(a) * rr, Math.sin(a) * rr]); }
+          return { x: rand(0, w), y: -30, r, vx: rand(-40, 40), vy: 110 + t * 3 + rand(0, 60), verts, rot: rand(0, 6), vr: rand(-1.5, 1.5) };
+        }
+        function finish(survived) {
+          const frac = survived ? 1 : t / DUR;
+          ctx.end(100 * frac * (1 - 0.1 * hits), `${survived ? "Survived the full 30 seconds" : `Lasted ${t.toFixed(0)} seconds`} · ${hits} hit${hits === 1 ? "" : "s"}`);
+        }
+        ctx.loop((dt) => {
+          t += dt; inv = Math.max(0, inv - dt);
+          if (K.ArrowLeft || K.KeyA) tx -= 340 * dt; if (K.ArrowRight || K.KeyD) tx += 340 * dt;
+          if (K.ArrowUp || K.KeyW) ty -= 340 * dt; if (K.ArrowDown || K.KeyS) ty += 340 * dt;
+          tx = clamp(tx, 12, w - 12); ty = clamp(ty, 12, h - 12);
+          sx += (tx - sx) * Math.min(1, 12 * dt); sy += (ty - sy) * Math.min(1, 12 * dt);
+          spawnT -= dt;
+          if (spawnT <= 0) { rocks.push(makeRock()); spawnT = Math.max(0.28, 0.7 - t * 0.012); }
+          rocks.forEach((r) => { r.x += r.vx * dt; r.y += r.vy * dt; r.rot += r.vr * dt; });
+          rocks = rocks.filter((r) => r.y < h + 40);
+          for (const r of rocks) {
+            if (inv <= 0 && Math.hypot(r.x - sx, r.y - sy) < r.r * 0.85 + 7) { hits++; inv = 1.3; r.y = h + 100; }
+          }
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, w, h);
+          g.fillStyle = "rgba(255,255,255,.5)";
+          for (let i = 0; i < 36; i++) g.fillRect((i * 71) % w, (i * 41 + t * 30) % h, 1.5, 1.5);
+          rocks.forEach((r) => {
+            g.save(); g.translate(r.x, r.y); g.rotate(r.rot);
+            g.fillStyle = "#6b21a8"; g.strokeStyle = "#c084fc"; g.lineWidth = 1.5;
+            g.beginPath(); r.verts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.fill(); g.stroke(); g.restore();
+          });
+          if (inv <= 0 || Math.floor(inv * 10) % 2 === 0) {
+            g.save(); g.translate(sx, sy);
+            g.fillStyle = "#e9d5ff"; g.beginPath(); g.moveTo(0, -12); g.lineTo(9, 10); g.lineTo(0, 5); g.lineTo(-9, 10); g.closePath(); g.fill();
+            g.fillStyle = "#fb923c"; g.beginPath(); g.moveTo(-3, 7); g.lineTo(0, 14 + Math.random() * 4); g.lineTo(3, 7); g.fill();
+            g.restore();
+          }
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - t))}s · HITS ${hits}/3`);
+          if (hits >= 3) finish(false); else if (t >= DUR) finish(true);
+        });
+      };
+
+      /* ---------- 8. Robotic Arm Tracking ---------- */
+      GAMES[8] = (ctx) => {
+        const cv = ctx.canvas(640, 270), { g, w, h } = cv, DUR = 25, RR = 36;
+        let t = 0, ph = 0, px = w / 2, py = h / 2, inside = 0, total = 0;
+        const move = (e) => { const p = cv.pos(e); px = p.x; py = p.y; };
+        ctx.on(cv.c, "pointermove", move); ctx.on(cv.c, "pointerdown", move);
+        cv.c.style.cursor = "none";
+        ctx.loop((dt) => {
+          t += dt; ph += dt * (1 + t / 50);
+          const cx = w / 2 + 215 * Math.sin(0.55 * ph), cy = h / 2 + 85 * Math.sin(0.83 * ph + 1);
+          const ok = Math.hypot(px - cx, py - cy) < RR;
+          total += dt; if (ok) inside += dt;
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, w, h);
+          g.fillStyle = "rgba(255,255,255,.35)";
+          for (let i = 0; i < 28; i++) g.fillRect((i * 89) % w, (i * 47) % h, 1.5, 1.5);
+          g.lineWidth = 4; g.strokeStyle = ok ? "#34d399" : "#ef4444";
+          g.beginPath(); g.arc(cx, cy, RR, 0, Math.PI * 2); g.stroke();
+          g.strokeStyle = "rgba(255,255,255,.25)"; g.lineWidth = 1;
+          g.beginPath(); g.moveTo(cx - 10, cy); g.lineTo(cx + 10, cy); g.moveTo(cx, cy - 10); g.lineTo(cx, cy + 10); g.stroke();
+          g.fillStyle = "#fbbf24"; g.beginPath(); g.arc(px, py, 6, 0, Math.PI * 2); g.fill();
+          g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(px, py, 6, 0, Math.PI * 2); g.stroke();
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - t))}s · ON TARGET ${Math.round(inside / total * 100)}%`);
+          if (t >= DUR) ctx.end(inside / total * 100, `Kept the grapple on target ${Math.round(inside / total * 100)}% of the time`);
+        });
+      };
+
+      /* ---------- 9. Lander Hover Balance ---------- */
+      GAMES[9] = (ctx) => {
+        const cv = ctx.canvas(640, 270), { g, w, h } = cv, DUR = 30;
+        let t = 0, y = h / 2, vy = 0, thrust = false, inside = 0;
+        ctx.on(document, "keydown", (e) => { if (e.code === "Space") { e.preventDefault(); thrust = true; } });
+        ctx.on(document, "keyup", (e) => { if (e.code === "Space") thrust = false; });
+        ctx.on(cv.c, "pointerdown", (e) => { e.preventDefault(); thrust = true; });
+        ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => ctx.on(cv.c, ev, () => (thrust = false)));
+        ctx.loop((dt) => {
+          t += dt;
+          vy += (thrust ? -560 : 280) * dt; vy = clamp(vy, -260, 300); y += vy * dt;
+          if (y < 16) { y = 16; vy = 0; } if (y > h - 16) { y = h - 16; vy = 0; }
+          const cy = h / 2 + 62 * Math.sin(t * 0.55), half = 42;
+          const ok = Math.abs(y - cy) < half; if (ok) inside += dt;
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, w, h);
+          g.fillStyle = ok ? "rgba(52,211,153,.22)" : "rgba(239,68,68,.18)"; g.fillRect(0, cy - half, w, half * 2);
+          g.strokeStyle = ok ? "#34d399" : "#ef4444"; g.lineWidth = 2;
+          g.beginPath(); g.moveTo(0, cy - half); g.lineTo(w, cy - half); g.moveTo(0, cy + half); g.lineTo(w, cy + half); g.stroke();
+          g.fillStyle = "rgba(255,255,255,.5)"; g.font = "600 10px JetBrains Mono, monospace"; g.fillText("SAFE ALTITUDE", 10, cy - half + 14);
+          const x = w / 2;
+          g.save(); g.translate(x, y);
+          if (thrust) { g.fillStyle = "#fb923c"; g.beginPath(); g.moveTo(-6, 12); g.lineTo(0, 26 + Math.random() * 8); g.lineTo(6, 12); g.fill(); }
+          g.fillStyle = "#e9d5ff"; g.beginPath(); g.arc(0, 0, 13, Math.PI, 0); g.lineTo(13, 8); g.lineTo(-13, 8); g.closePath(); g.fill();
+          g.fillStyle = "#7c3aed"; g.fillRect(-16, 8, 32, 4); g.fillRect(-14, 12, 3, 5); g.fillRect(11, 12, 3, 5);
+          g.restore();
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - t))}s · IN BAND ${Math.round(inside / t * 100)}%`);
+          if (t >= DUR) ctx.end(inside / t * 100, `Held the safe altitude band ${Math.round(inside / t * 100)}% of the time`);
+        });
+      };
+
+      /* ---------- 10. Conduit Path Trace ---------- */
+      GAMES[10] = (ctx) => {
+        const cv = ctx.canvas(640, 260), { g, w, h } = cv, HALF = 17, LIMIT = 60;
+        const ph = rand(0, 6.28), pts = [];
+        for (let i = 0; i <= 16; i++) pts.push({ x: 36 + i * (w - 72) / 16, y: h / 2 + 78 * Math.sin(i * 0.62 + ph) * (i < 2 ? i / 2 : 1) });
+        const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+        const total = cum[cum.length - 1];
+        function nearest(p) {
+          let best = { d: 1e9, s: 0 };
+          for (let i = 1; i < pts.length; i++) {
+            const a = pts[i - 1], b = pts[i], dx = b.x - a.x, dy = b.y - a.y, len2 = dx * dx + dy * dy;
+            const u = clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / len2, 0, 1);
+            const d = Math.hypot(p.x - (a.x + u * dx), p.y - (a.y + u * dy));
+            if (d < best.d) best = { d, s: cum[i - 1] + u * Math.sqrt(len2) };
+          }
+          return best;
+        }
+        let t = 0, active = false, outside = false, hits = 0, maxS = 0, flash = 0, trail = [], done = false, attempts = 1;
+        ctx.on(cv.c, "pointerdown", (e) => {
+          const p = cv.pos(e);
+          if (Math.hypot(p.x - pts[0].x, p.y - pts[0].y) < 26) {
+            active = true; outside = false; trail = [p]; maxS = 0; try { cv.c.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+          }
+        });
+        ctx.on(cv.c, "pointermove", (e) => {
+          if (!active || done) return;
+          const p = cv.pos(e), n = nearest(p);
+          trail.push(p); if (trail.length > 400) trail.shift();
+          if (n.d > HALF) { if (!outside) { outside = true; hits++; flash = 0.3; } } else { outside = false; maxS = Math.max(maxS, n.s); }
+          const end = pts[pts.length - 1];
+          if (Math.hypot(p.x - end.x, p.y - end.y) < 20 && maxS > total * 0.9) {
+            done = true;
+            ctx.end(Math.max(10, 100 - hits * 8 - Math.max(0, t - 25)), `Completed in ${t.toFixed(1)} s · ${hits} wall contact${hits === 1 ? "" : "s"}`);
+          }
+        });
+        const release = () => { if (active && !done) { active = false; attempts++; trail = []; } };
+        ctx.on(cv.c, "pointerup", release); ctx.on(cv.c, "pointercancel", release);
+        ctx.loop((dt) => {
+          if (done) return;
+          t += dt; flash = Math.max(0, flash - dt);
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, w, h);
+          g.lineCap = "round"; g.lineJoin = "round";
+          const path = () => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y))); };
+          g.strokeStyle = flash > 0 ? "#7f1d1d" : "#4c1d95"; g.lineWidth = HALF * 2 + 6; path(); g.stroke();
+          g.strokeStyle = "#1e1b4b"; g.lineWidth = HALF * 2 - 2; path(); g.stroke();
+          g.setLineDash([4, 8]); g.strokeStyle = "rgba(192,132,252,.5)"; g.lineWidth = 1.5; path(); g.stroke(); g.setLineDash([]);
+          if (trail.length > 1) { g.strokeStyle = "#fbbf24"; g.lineWidth = 2; g.beginPath(); trail.forEach((p, i) => (i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y))); g.stroke(); }
+          g.fillStyle = "#22c55e"; g.beginPath(); g.arc(pts[0].x, pts[0].y, 12, 0, 7); g.fill();
+          const e = pts[pts.length - 1]; g.fillStyle = "#fbbf24"; g.beginPath(); g.arc(e.x, e.y, 12, 0, 7); g.fill();
+          if (!active) { g.fillStyle = "#e9d5ff"; g.font = "600 11px Inter, sans-serif"; g.fillText("Press the green node and drag to the gold node", 14, 18); }
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(LIMIT - t))}s · CONTACTS ${hits}`);
+          if (t >= LIMIT) { done = true; ctx.end(maxS / total * 40, `Time ran out at ${Math.round(maxS / total * 100)}% of the conduit · ${hits} wall contacts`); }
+        });
+      };
+
+      /* ---------- 11. Horizon Levelling ---------- */
+      GAMES[11] = (ctx) => {
+        const cv = ctx.canvas(640, 240), { g, w, h } = cv, ROUNDS = 3, LIMIT = 20, R = 108;
+        let round = 0, angle = 0, t = 0, holdT = 0, dir = 0, state = "run";
+        const scores = [], K = ctx.keys();
+        const row = document.createElement("div"); row.className = "g-row";
+        row.innerHTML = `<button class="g-btn alt sm" data-d="-1">⟲ Rotate left</button><button class="g-btn alt sm" data-d="1">Rotate right ⟳</button>`;
+        ctx.root.appendChild(row);
+        row.querySelectorAll("[data-d]").forEach((b) => ctx.hold(b, (on) => { dir = on ? parseInt(b.dataset.d, 10) : 0; }));
+        let dragX = null;
+        ctx.on(cv.c, "pointerdown", (e) => { dragX = cv.pos(e).x; });
+        ctx.on(cv.c, "pointermove", (e) => { if (dragX === null || state !== "run") return; const x = cv.pos(e).x; angle += (x - dragX) * 0.35; dragX = x; });
+        ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => ctx.on(cv.c, ev, () => (dragX = null)));
+        function newRound() { angle = (Math.random() < 0.5 ? -1 : 1) * rand(25, 75); t = 0; holdT = 0; state = "run"; ctx.hud(`ROUND ${round + 1}/${ROUNDS}`); }
+        function endRound(ok) {
+          state = "pause";
+          const s = ok ? clamp(100 - Math.max(0, t - 4) * 6, 10, 100) : 0; scores.push(s); round++;
+          ctx.after(() => (round >= ROUNDS ? ctx.end(avg(scores), `Rounds scored: ${scores.map((x) => Math.round(x)).join(" / ")}`) : newRound()), 1000);
+        }
+        newRound();
+        ctx.loop((dt) => {
+          if (state === "run") {
+            t += dt;
+            let d = dir; if (K.ArrowLeft || K.KeyA) d -= 1; if (K.ArrowRight || K.KeyD) d += 1;
+            angle += clamp(d, -1, 1) * 42 * dt;
+            if (Math.abs(angle) <= 1.5) holdT += dt; else holdT = 0;
+            if (holdT >= 0.8) endRound(true); else if (t >= LIMIT) endRound(false);
+          }
+          const cx = w / 2, cy = h / 2;
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, w, h);
+          g.save(); g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.clip();
+          g.translate(cx, cy); g.rotate(angle * Math.PI / 180);
+          g.fillStyle = "#4c1d95"; g.fillRect(-300, -300, 600, 300);
+          g.fillStyle = "#78350f"; g.fillRect(-300, 0, 600, 300);
+          g.strokeStyle = "#fff"; g.lineWidth = 2; g.beginPath(); g.moveTo(-300, 0); g.lineTo(300, 0); g.stroke();
+          g.strokeStyle = "rgba(255,255,255,.6)"; g.lineWidth = 1.5;
+          [-60, -30, 30, 60].forEach((o) => { g.beginPath(); g.moveTo(-26, o); g.lineTo(26, o); g.stroke(); });
+          g.restore();
+          g.strokeStyle = "#a78bfa"; g.lineWidth = 4; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
+          g.fillStyle = "#fbbf24"; g.beginPath(); g.moveTo(cx, cy - R - 3); g.lineTo(cx - 8, cy - R - 16); g.lineTo(cx + 8, cy - R - 16); g.closePath(); g.fill();
+          g.strokeStyle = "#fbbf24"; g.lineWidth = 3; g.beginPath(); g.moveTo(cx - 50, cy); g.lineTo(cx - 14, cy); g.lineTo(cx, cy + 10); g.lineTo(cx + 14, cy); g.lineTo(cx + 50, cy); g.stroke();
+          g.fillStyle = "#e9d5ff"; g.font = "700 15px JetBrains Mono, monospace"; g.textAlign = "left";
+          g.fillText(`ROLL ${angle >= 0 ? "+" : ""}${angle.toFixed(1)}°`, 20, 40);
+          g.fillStyle = holdT > 0 ? "#34d399" : "#a78bfa"; g.font = "600 11px JetBrains Mono, monospace";
+          g.fillText(holdT > 0 ? `LOCKING ${Math.round(holdT / 0.8 * 100)}%` : `TIME ${Math.max(0, Math.ceil(LIMIT - t))}s`, 20, 62);
+        });
+      };
+
+      /* ---------- 12. Mental Rotation Match ---------- */
+      GAMES[12] = (ctx) => {
+        const R = ctx.root, N = 8;
+        const norm = (cells) => { const mx = Math.min(...cells.map((c) => c[0])), my = Math.min(...cells.map((c) => c[1])); return cells.map((c) => [c[0] - mx, c[1] - my]).sort((a, b) => a[0] - b[0] || a[1] - b[1]); };
+        const rot90 = (cells) => norm(cells.map(([x, y]) => [y, -x]));
+        const mirror = (cells) => norm(cells.map(([x, y]) => [-x, y]));
+        const key = (cells) => cells.map((c) => c.join(",")).join(";");
+        const rotations = (cells) => { const out = [norm(cells)]; for (let i = 0; i < 3; i++) out.push(rot90(out[i])); return out; };
+        function randomShape() {
+          for (let tries = 0; tries < 500; tries++) {
+            let cells = [[0, 0]];
+            while (cells.length < 6) {
+              const [x, y] = pick(cells), [dx, dy] = pick([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+              if (!cells.some((c) => c[0] === x + dx && c[1] === y + dy)) cells.push([x + dx, y + dy]);
+            }
+            cells = norm(cells);
+            const bw = Math.max(...cells.map((c) => c[0])) + 1, bh = Math.max(...cells.map((c) => c[1])) + 1;
+            if (bw > 4 || bh > 4) continue;
+            if (rotations(cells).map(key).includes(key(mirror(cells)))) continue;
+            return cells;
+          }
+          return norm([[0, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 3]]);
+        }
+        function svg(cells, color) {
+          const size = 24, W = 4 * size, bw = Math.max(...cells.map((c) => c[0])) + 1, bh = Math.max(...cells.map((c) => c[1])) + 1;
+          const ox = (W - bw * size) / 2, oy = (W - bh * size) / 2;
+          return `<svg width="${W}" height="${W}" viewBox="0 0 ${W} ${W}">${cells.map(([x, y]) => `<rect x="${ox + x * size + 1}" y="${oy + y * size + 1}" width="${size - 2}" height="${size - 2}" rx="4" fill="${color}"/>`).join("")}</svg>`;
+        }
+        let round = 0, correct = 0, t0 = 0;
+        const rts = [];
+        function show() {
+          const base = randomShape();
+          const good = rotations(base)[randi(1, 3)];
+          const mr = rotations(mirror(base)), idx = shuffle([0, 1, 2, 3]).slice(0, 2);
+          const opts = shuffle([{ c: good, ok: true }, { c: mr[idx[0]], ok: false }, { c: mr[idx[1]], ok: false }]);
+          R.innerHTML = `<div class="g-prompt">Round ${round + 1} of ${N}: which option is the same shape, only rotated?</div>
+            <div class="g-row" style="gap:28px">
+              <div style="text-align:center"><div class="g-kicker" style="margin-bottom:4px">Reference</div><div style="background:#171033;border:1px solid #6b21a8;border-radius:14px;padding:8px">${svg(base, "#c084fc")}</div></div>
+              <div style="width:1px;height:110px;background:#312e81"></div>
+              <div class="g-row" style="gap:12px">${opts.map((o, i) => `<button class="g-opt" data-i="${i}" style="width:auto;padding:8px;text-align:center"><div class="g-kicker" style="margin-bottom:4px">${"ABC"[i]}</div>${svg(o.c, "#a855f7")}</button>`).join("")}</div>
+            </div>`;
+          ctx.hud(`ROUND ${round + 1}/${N} · ${correct} CORRECT`);
+          t0 = performance.now();
+          R.querySelectorAll("[data-i]").forEach((b) => ctx.press(b, () => {
+            const o = opts[parseInt(b.dataset.i, 10)];
+            rts.push(performance.now() - t0); if (o.ok) correct++;
+            R.querySelectorAll("[data-i]").forEach((x) => { x.disabled = true; });
+            b.classList.add(o.ok ? "good" : "bad");
+            round++;
+            ctx.after(() => (round >= N ? ctx.end(correct / N * 100, `${correct} of ${N} correct · average ${(avg(rts) / 1000).toFixed(1)} s per shape`) : show()), 700);
+          }));
+        }
+        show();
+      };
+
+      /* ---------- 13. Docking Angle Estimation ---------- */
+      GAMES[13] = (ctx) => {
+        const cv = ctx.canvas(640, 270), { g, w, h } = cv, ROUNDS = 6, PR = 20;
+        let round = 0, L, P, st = "aim", shot = null, aim = { x: 300, y: 135 }, msg = "", msgT = 0;
+        const scores = [];
+        function newRound() { L = { x: 46, y: rand(50, h - 50) }; P = { x: rand(380, 590), y: rand(38, h - 38) }; st = "aim"; shot = null; msg = ""; ctx.hud(`SHOT ${round + 1}/${ROUNDS}`); }
+        newRound();
+        ctx.on(cv.c, "pointermove", (e) => { aim = cv.pos(e); });
+        ctx.on(cv.c, "pointerdown", (e) => {
+          if (st !== "aim") return;
+          const p = cv.pos(e); aim = p;
+          const dx = p.x - L.x, dy = p.y - L.y, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+          const vx = P.x - L.x, vy = P.y - L.y, along = vx * ux + vy * uy, err = Math.abs(vx * uy - vy * ux);
+          const s = along <= 0 ? 0 : err <= PR ? 100 - err / PR * 25 : Math.max(0, 75 - (err - PR) * 1.5);
+          const hit = along > 0 && err <= PR;
+          shot = { ux, uy, max: hit ? along : 900, d: 0, err, s, hit };
+          st = "fly";
+        });
+        ctx.loop((dt) => {
+          if (st === "fly") {
+            shot.d += 900 * dt;
+            if (shot.d >= shot.max) {
+              st = "result"; msgT = 1.2; scores.push(shot.s); round++;
+              msg = shot.hit ? `DOCKED · ${shot.err.toFixed(0)} px off centre` : `MISSED · ${shot.err.toFixed(0)} px off`;
+            }
+          } else if (st === "result") {
+            msgT -= dt;
+            if (msgT <= 0) { if (round >= ROUNDS) { st = "done"; ctx.end(avg(scores), `Shot scores: ${scores.map((x) => Math.round(x)).join(" / ")}`); } else newRound(); }
+          }
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, w, h);
+          g.fillStyle = "rgba(255,255,255,.35)"; for (let i = 0; i < 30; i++) g.fillRect((i * 83) % w, (i * 59) % h, 1.5, 1.5);
+          g.strokeStyle = "#a78bfa"; g.lineWidth = 3; g.beginPath(); g.arc(P.x, P.y, PR + 6, 0, 7); g.stroke();
+          g.strokeStyle = "#fbbf24"; g.lineWidth = 2; g.beginPath(); g.arc(P.x, P.y, PR, 0, 7); g.stroke();
+          g.fillStyle = "rgba(251,191,36,.25)"; g.beginPath(); g.arc(P.x, P.y, PR - 4, 0, 7); g.fill();
+          g.fillStyle = "#7c3aed"; g.fillRect(L.x - 18, L.y - 12, 26, 24);
+          g.fillStyle = "#e9d5ff"; g.fillRect(L.x + 6, L.y - 4, 12, 8);
+          if (st === "aim") {
+            const dx = aim.x - L.x, dy = aim.y - L.y, len = Math.hypot(dx, dy) || 1;
+            g.setLineDash([6, 6]); g.strokeStyle = "rgba(233,213,255,.5)"; g.lineWidth = 1.5;
+            g.beginPath(); g.moveTo(L.x, L.y); g.lineTo(L.x + dx / len * 900, L.y + dy / len * 900); g.stroke(); g.setLineDash([]);
+          }
+          if (shot && (st === "fly" || st === "result")) {
+            const d = Math.min(shot.d, shot.max);
+            g.strokeStyle = "#34d399"; g.lineWidth = 2; g.beginPath(); g.moveTo(L.x, L.y); g.lineTo(L.x + shot.ux * d, L.y + shot.uy * d); g.stroke();
+            g.fillStyle = "#fff"; g.beginPath(); g.arc(L.x + shot.ux * d, L.y + shot.uy * d, 4, 0, 7); g.fill();
+          }
+          g.fillStyle = "#e9d5ff"; g.font = "700 13px JetBrains Mono, monospace"; g.textAlign = "center";
+          g.fillText(st === "aim" ? "Click to aim and fire the tether probe" : msg, w / 2, 20); g.textAlign = "left";
+        });
+      };
+
+      /* ---------- 14. Inverted Control Adaptation ---------- */
+      GAMES[14] = (ctx) => {
+        const cv = ctx.canvas(640, 200), { g, w, h } = cv, DUR = 45, TARGET = 8;
+        let t = 0, x = w / 2, y = h / 2, collected = 0, tgt = null;
+        const K = ctx.keys(), pad = { l: 0, r: 0, u: 0, d: 0 };
+        function spawn() { do { tgt = { x: rand(30, w - 30), y: rand(30, h - 30) }; } while (Math.hypot(tgt.x - x, tgt.y - y) < 120); }
+        spawn();
+        const row = document.createElement("div"); row.className = "g-row";
+        row.innerHTML = `<button class="g-btn alt sm" data-p="l">←</button><button class="g-btn alt sm" data-p="u">↑</button><button class="g-btn alt sm" data-p="d">↓</button><button class="g-btn alt sm" data-p="r">→</button>`;
+        ctx.root.appendChild(row);
+        row.querySelectorAll("[data-p]").forEach((b) => ctx.hold(b, (on) => { pad[b.dataset.p] = on ? 1 : 0; }));
+        ctx.loop((dt) => {
+          t += dt;
+          const L = K.ArrowLeft || K.KeyA || pad.l, Rr = K.ArrowRight || K.KeyD || pad.r, U = K.ArrowUp || K.KeyW || pad.u, D = K.ArrowDown || K.KeyS || pad.d;
+          // inverted: pressing a direction moves the opposite way
+          x = clamp(x + ((L ? 1 : 0) - (Rr ? 1 : 0)) * 190 * dt, 10, w - 10);
+          y = clamp(y + ((U ? 1 : 0) - (D ? 1 : 0)) * 190 * dt, 10, h - 10);
+          if (Math.hypot(tgt.x - x, tgt.y - y) < 22) { collected++; spawn(); }
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, w, h);
+          g.fillStyle = "rgba(255,255,255,.3)"; for (let i = 0; i < 26; i++) g.fillRect((i * 79) % w, (i * 43) % h, 1.5, 1.5);
+          g.strokeStyle = "#fbbf24"; g.lineWidth = 3; g.beginPath(); g.arc(tgt.x, tgt.y, 14 + Math.sin(t * 5) * 2, 0, 7); g.stroke();
+          g.fillStyle = "#fbbf24"; g.beginPath(); g.arc(tgt.x, tgt.y, 4, 0, 7); g.fill();
+          g.save(); g.translate(x, y); g.fillStyle = "#e9d5ff"; g.beginPath(); g.arc(0, 0, 9, 0, 7); g.fill();
+          g.fillStyle = "#7c3aed"; g.beginPath(); g.arc(0, 0, 4.5, 0, 7); g.fill(); g.restore();
+          g.fillStyle = "#f87171"; g.font = "700 11px JetBrains Mono, monospace"; g.fillText("CONTROLS INVERTED", 10, 18);
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - t))}s · COLLECTED ${collected}`);
+          if (t >= DUR) ctx.end(collected / TARGET * 100, `${collected} markers collected with inverted controls`);
+        });
+      };
+
+      /* ---------- 15. Star Grid Plotting ---------- */
+      GAMES[15] = (ctx) => {
+        const R = ctx.root, N = 8, CELL = 26, OX = 30, OY = 270;
+        const row = document.createElement("div"); row.className = "g-row"; row.style.gap = "20px";
+        row.innerHTML = `<div style="width:190px;text-align:center"><div class="g-kicker">Plot star at</div><div class="g-big" data-q style="margin:6px 0">X = 0<br>Y = 0</div><div class="g-prompt" data-fb>&nbsp;</div></div>`;
+        R.appendChild(row);
+        const cv = ctx.canvas(300, 300); row.appendChild(cv.c);
+        const { g } = cv, Q = row.querySelector("[data-q]"), FB = row.querySelector("[data-fb]");
+        let round = 0, tx = 0, ty = 0, locked = false, mark = null, chosen = null;
+        const scores = [], deco = Array.from({ length: 18 }, () => ({ x: rand(0, 300), y: rand(0, 300) }));
+        function next() {
+          tx = randi(1, 9); ty = randi(1, 9); locked = false; mark = null; chosen = null;
+          Q.innerHTML = `X = ${tx}<br>Y = ${ty}`; FB.innerHTML = "&nbsp;"; ctx.hud(`STAR ${round + 1}/${N}`);
+        }
+        next();
+        ctx.on(cv.c, "pointerdown", (e) => {
+          if (locked) return; locked = true;
+          const p = cv.pos(e);
+          const X = clamp(Math.round((p.x - OX) / CELL), 0, 10), Y = clamp(Math.round((OY - p.y) / CELL), 0, 10);
+          chosen = { X, Y }; mark = { X: tx, Y: ty };
+          const d = Math.hypot(X - tx, Y - ty), s = clamp(100 - 45 * d, 0, 100);
+          scores.push(s); round++;
+          FB.textContent = d === 0 ? "Exact!" : `You plotted (${X}, ${Y})`;
+          ctx.after(() => (round >= N ? ctx.end(avg(scores), `Average plotting accuracy ${Math.round(avg(scores))}% over ${N} stars`) : next()), 1100);
+        });
+        ctx.loop(() => {
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, 300, 300);
+          g.fillStyle = "rgba(255,255,255,.25)"; deco.forEach((d) => g.fillRect(d.x, d.y, 1.5, 1.5));
+          g.strokeStyle = "rgba(52,211,153,.18)"; g.lineWidth = 1;
+          for (let i = 0; i <= 10; i++) {
+            g.beginPath(); g.moveTo(OX + i * CELL, OY); g.lineTo(OX + i * CELL, OY - 10 * CELL); g.stroke();
+            g.beginPath(); g.moveTo(OX, OY - i * CELL); g.lineTo(OX + 10 * CELL, OY - i * CELL); g.stroke();
+          }
+          g.strokeStyle = "#34d399"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(OX, OY - 10 * CELL); g.lineTo(OX, OY); g.lineTo(OX + 10 * CELL, OY); g.stroke();
+          g.fillStyle = "#a78bfa"; g.font = "600 9px JetBrains Mono, monospace"; g.textAlign = "center";
+          for (let i = 0; i <= 10; i++) { g.fillText(i, OX + i * CELL, OY + 14); g.fillText(i, OX - 12, OY - i * CELL + 3); }
+          g.textAlign = "left";
+          if (chosen) { g.fillStyle = "#f59e0b"; g.beginPath(); g.arc(OX + chosen.X * CELL, OY - chosen.Y * CELL, 6, 0, 7); g.fill(); }
+          if (mark) { g.strokeStyle = "#34d399"; g.lineWidth = 2.5; g.beginPath(); g.arc(OX + mark.X * CELL, OY - mark.Y * CELL, 10, 0, 7); g.stroke(); }
+        });
+      };
+
+      /* ---------- 16. Radar Signal Watch ---------- */
+      GAMES[16] = (ctx) => {
+        const R = ctx.root, DUR = 40;
+        let el = 0, golds = 0, hits = 0, falseA = 0, over = false, n = 0;
+        R.innerHTML = `<div class="g-prompt">Click only the <b style="color:#fbbf24">golden</b> blips. Ignore <b style="color:#22d3ee">cyan</b> decoys.</div>
+          <div class="g-radar"><div class="g-sweep"></div><div class="g-ring" style="width:70px;height:70px"></div><div class="g-ring" style="width:140px;height:140px"></div><div class="g-ring" style="width:210px;height:210px"></div></div>`;
+        const radar = R.querySelector(".g-radar"), timers = new Set();
+        ctx.onDispose(() => timers.forEach(clearTimeout));
+        function spawn() {
+          if (over) return;
+          n++;
+          const gold = n === 3 || Math.random() < 0.3;
+          if (gold) golds++;
+          const a = rand(0, Math.PI * 2), d = rand(18, 104);
+          const b = document.createElement("button");
+          b.className = `g-blip ${gold ? "gold" : "cyan"}`; b.tabIndex = -1;
+          b.style.left = `${125 + Math.cos(a) * d}px`; b.style.top = `${125 + Math.sin(a) * d}px`;
+          radar.appendChild(b);
+          let done = false;
+          const tid = setTimeout(() => { timers.delete(tid); if (!done) b.remove(); }, 1800); timers.add(tid);
+          ctx.press(b, () => {
+            if (done) return; done = true;
+            if (gold) hits++; else falseA++;
+            b.style.opacity = ".3"; setTimeout(() => b.remove(), 150);
+          });
+        }
+        ctx.every(spawn, 900);
+        ctx.every(() => {
+          el += 0.5; ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - el))}s · HITS ${hits}`);
+          if (el >= DUR && !over) { over = true; ctx.after(() => ctx.end(golds ? hits / golds * 100 - falseA * 8 : 0, `${hits} of ${golds} golden targets found · ${falseA} false alarm${falseA === 1 ? "" : "s"}`), 2000); }
+        }, 500);
+      };
+
+      /* ---------- 17. Telemetry Anomaly Scan ---------- */
+      GAMES[17] = (ctx) => {
+        const R = ctx.root, N = 8, COLS = 8, ROWS = 5;
+        let round = 0, t0 = 0, wrong = 0;
+        const scores = [];
+        function show() {
+          const idx = randi(0, COLS * ROWS - 1), high = Math.random() < 0.5;
+          const vals = Array.from({ length: COLS * ROWS }, (_, i) => i === idx ? (high ? 60 + rand(3, 14) : 40 - rand(3, 14)) : rand(41, 59));
+          R.innerHTML = `<div class="g-prompt">Nominal range <b style="color:#34d399">40.0 – 60.0</b> · find the out-of-range reading (round ${round + 1} of ${N})</div>
+            <div class="g-grid" style="grid-template-columns:repeat(${COLS},70px);gap:5px">${vals.map((v, i) => `<button class="g-num" data-i="${i}" tabindex="-1">${v.toFixed(1)}</button>`).join("")}</div>`;
+          ctx.hud(`ROUND ${round + 1}/${N}`);
+          wrong = 0; t0 = performance.now();
+          R.querySelectorAll("[data-i]").forEach((b) => ctx.press(b, () => {
+            if (b.disabled) return;
+            if (parseInt(b.dataset.i, 10) === idx) {
+              const t = (performance.now() - t0) / 1000;
+              b.classList.add("good");
+              scores.push(clamp(100 - Math.max(0, t - 4) * 7 - wrong * 20, 0, 100)); round++;
+              R.querySelectorAll("[data-i]").forEach((x) => { x.disabled = true; });
+              ctx.after(() => (round >= N ? ctx.end(avg(scores), `Average score ${Math.round(avg(scores))} across ${N} scans`) : show()), 600);
+            } else { wrong++; b.classList.add("bad"); b.disabled = true; }
+          }));
+        }
+        show();
+      };
+
+      /* ---------- 18. Keypad Sequence Recall ---------- */
+      GAMES[18] = (ctx) => {
+        const R = ctx.root, MAXLEN = 10;
+        let seq = [], idx = 0, accept = false, best = 0, len = 2;
+        R.innerHTML = `<div class="g-prompt"></div><div class="g-keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button class="g-key" data-n="${n}" tabindex="-1">${n}</button>`).join("")}</div>`;
+        const P = R.querySelector(".g-prompt"), keys = {};
+        R.querySelectorAll("[data-n]").forEach((b) => { keys[b.dataset.n] = b; ctx.press(b, () => input(parseInt(b.dataset.n, 10))); });
+        function light(n, ms, cls = "lit") { keys[n].classList.add(cls); setTimeout(() => keys[n].classList.remove(cls), ms); }
+        function round() {
+          accept = false; seq = []; idx = 0;
+          for (let i = 0; i < len; i++) seq.push(randi(1, 9));
+          P.textContent = `Watch the sequence (${len} pads)`; ctx.hud(`LENGTH ${len} · BEST ${best}`);
+          seq.forEach((n, i) => ctx.after(() => light(n, 420), 800 + i * 700));
+          ctx.after(() => { accept = true; P.textContent = "Your turn: repeat the sequence"; }, 800 + len * 700);
+        }
+        function input(n) {
+          if (!accept) return;
+          light(n, 150);
+          if (n !== seq[idx]) {
+            accept = false; P.textContent = "Incorrect sequence"; light(n, 400, "wrong");
+            ctx.after(() => ctx.end(best * 10, `Longest sequence recalled: ${best} pad${best === 1 ? "" : "s"}`), 1100); return;
+          }
+          idx++;
+          if (idx >= seq.length) {
+            accept = false; best = len; P.textContent = "Correct!";
+            if (len >= MAXLEN) { ctx.after(() => ctx.end(100, `Recalled the full ${MAXLEN}-pad sequence`), 800); return; }
+            len++; ctx.after(round, 900);
+          }
+        }
+        ctx.on(document, "keydown", (e) => { const m = /^(?:Digit|Numpad)([1-9])$/.exec(e.code); if (m) input(parseInt(m[1], 10)); });
+        ctx.after(round, 500);
+      };
+
+      /* ---------- 19. Circuit Grid Memory ---------- */
+      GAMES[19] = (ctx) => {
+        const R = ctx.root, KS = [3, 4, 5, 6, 7];
+        let round = 0, target = new Set(), selected = new Set(), accept = false;
+        const scores = [];
+        R.innerHTML = `<div class="g-prompt"></div><div class="g-relays">${Array.from({ length: 25 }, (_, i) => `<button class="g-relay" data-i="${i}" tabindex="-1"></button>`).join("")}</div>`;
+        const P = R.querySelector(".g-prompt"), cells = [...R.querySelectorAll("[data-i]")];
+        cells.forEach((b, i) => ctx.press(b, () => {
+          if (!accept) return;
+          if (selected.has(i)) { selected.delete(i); b.classList.remove("sel"); }
+          else { selected.add(i); b.classList.add("sel"); }
+          if (selected.size === target.size) check();
+        }));
+        function start() {
+          const k = KS[round];
+          cells.forEach((c) => (c.className = "g-relay"));
+          target = new Set(shuffle([...Array(25).keys()]).slice(0, k)); selected = new Set(); accept = false;
+          P.textContent = `Round ${round + 1} of ${KS.length}: memorise ${k} relays`; ctx.hud(`ROUND ${round + 1}/${KS.length}`);
+          target.forEach((i) => cells[i].classList.add("show"));
+          ctx.after(() => { cells.forEach((c) => c.classList.remove("show")); accept = true; P.textContent = `Select the ${k} relays that lit up`; }, 2000);
+        }
+        function check() {
+          accept = false;
+          let right = 0, wrong = 0;
+          cells.forEach((c, i) => {
+            c.classList.remove("sel");
+            if (selected.has(i) && target.has(i)) { c.classList.add("right"); right++; }
+            else if (selected.has(i)) { c.classList.add("wrong"); wrong++; }
+            else if (target.has(i)) c.classList.add("miss");
+          });
+          scores.push(clamp((right - wrong) / target.size * 100, 0, 100)); round++;
+          P.textContent = `${right} of ${target.size} correct`;
+          ctx.after(() => (round >= KS.length ? ctx.end(avg(scores), `Rounds scored: ${scores.map((x) => Math.round(x)).join(" / ")}`) : start()), 1400);
+        }
+        ctx.after(start, 400);
+      };
+
+      /* ---------- 20. Orbital Beacon N-Back ---------- */
+      GAMES[20] = (ctx) => {
+        const R = ctx.root, N = 24, STEP = 1800;
+        const BEACONS = [{ c: "#ef4444", n: "RED" }, { c: "#f59e0b", n: "AMBER" }, { c: "#22c55e", n: "GREEN" }, { c: "#06b6d4", n: "CYAN" }, { c: "#6366f1", n: "INDIGO" }, { c: "#ec4899", n: "PINK" }];
+        const seq = [];
+        for (let i = 0; i < N; i++) {
+          if (i >= 2 && Math.random() < 0.32) seq.push(seq[i - 2]);
+          else { let v; do { v = randi(0, 5); } while (i >= 2 && v === seq[i - 2]); seq.push(v); }
+        }
+        let i = -1, pressed = false, hits = 0, targets = 0, cr = 0, nonT = 0, fa = 0;
+        R.innerHTML = `<div class="g-prompt">Press MATCH if this beacon equals the one <b>two</b> steps ago.</div><div class="g-beacon" style="background:#171033;border:2px dashed #312e81"></div><div class="g-big" data-n style="font-size:1.1rem">&nbsp;</div><button class="g-btn" tabindex="-1">MATCH</button>`;
+        const B = R.querySelector(".g-beacon"), NM = R.querySelector("[data-n]"), btn = R.querySelector(".g-btn");
+        function press() { if (i >= 0 && !pressed) { pressed = true; btn.style.background = "#a855f7"; setTimeout(() => (btn.style.background = ""), 150); } }
+        function step() {
+          if (i >= 0 && i >= 2) {
+            const isT = seq[i] === seq[i - 2];
+            if (isT) { targets++; if (pressed) hits++; } else { nonT++; if (!pressed) cr++; else fa++; }
+          }
+          i++;
+          if (i >= N) { finish(); return; }
+          pressed = false;
+          const b = BEACONS[seq[i]];
+          B.style.cssText = `background:${b.c};box-shadow:0 0 50px ${b.c}`; NM.textContent = b.n;
+          ctx.hud(`BEACON ${i + 1}/${N}`);
+          ctx.after(() => { B.style.cssText = "background:#171033;border:2px dashed #312e81"; NM.innerHTML = "&nbsp;"; }, 1300);
+          ctx.after(step, STEP);
+        }
+        function finish() {
+          const hr = targets ? hits / targets : 1, crr = nonT ? cr / nonT : 1;
+          ctx.end((hr + crr) / 2 * 100, `${hits} of ${targets} matches found · ${fa} false alarm${fa === 1 ? "" : "s"}`);
+        }
+        ctx.press(btn, press);
+        ctx.on(document, "keydown", (e) => { if (e.code === "Space" && !e.repeat) { e.preventDefault(); press(); } });
+        ctx.after(step, 700);
+      };
+
+      /* ---------- 21. Dual-Task Docking ---------- */
+      GAMES[21] = (ctx) => {
+        const cv = ctx.canvas(640, 230), { g, w, h } = cv, DUR = 40, CX = w / 2, CY = h / 2, RING = 34;
+        const spots = [{ x: 10, y: 10 }, { x: w - 110, y: 10 }, { x: 10, y: h - 60 }, { x: w - 110, y: h - 60 }].map((s) => ({ ...s, w: 100, h: 50, lit: 0 }));
+        let t = 0, sx = CX + 40, sy = CY - 20, vx = 0, vy = 0, aligned = 0, cleared = 0, missed = 0, spawnT = 1.2;
+        const K = ctx.keys(), pad = { l: 0, r: 0, u: 0, d: 0 };
+        const row = document.createElement("div"); row.className = "g-row";
+        row.innerHTML = `<button class="g-btn alt sm" data-p="l">←</button><button class="g-btn alt sm" data-p="u">↑</button><button class="g-btn alt sm" data-p="d">↓</button><button class="g-btn alt sm" data-p="r">→</button>`;
+        ctx.root.appendChild(row);
+        row.querySelectorAll("[data-p]").forEach((b) => ctx.hold(b, (on) => { pad[b.dataset.p] = on ? 1 : 0; }));
+        ctx.on(cv.c, "pointerdown", (e) => {
+          const p = cv.pos(e);
+          spots.forEach((s) => { if (s.lit > 0 && p.x >= s.x && p.x <= s.x + s.w && p.y >= s.y && p.y <= s.y + s.h) { s.lit = 0; cleared++; } });
+        });
+        ctx.loop((dt) => {
+          t += dt;
+          const ax = ((K.ArrowRight || K.KeyD || pad.r) ? 1 : 0) - ((K.ArrowLeft || K.KeyA || pad.l) ? 1 : 0);
+          const ay = ((K.ArrowDown || K.KeyS || pad.d) ? 1 : 0) - ((K.ArrowUp || K.KeyW || pad.u) ? 1 : 0);
+          vx += (rand(-1, 1) * 260 + ax * 320 + (sx - CX) * 0.35) * dt; vy += (rand(-1, 1) * 260 + ay * 320 + (sy - CY) * 0.35) * dt;
+          vx *= 1 - 0.5 * dt; vy *= 1 - 0.5 * dt;
+          sx += vx * dt; sy += vy * dt;
+          if (sx < 10 || sx > w - 10) { vx *= -0.5; sx = clamp(sx, 10, w - 10); }
+          if (sy < 10 || sy > h - 10) { vy *= -0.5; sy = clamp(sy, 10, h - 10); }
+          const ok = Math.hypot(sx - CX, sy - CY) < RING; if (ok) aligned += dt;
+          spawnT -= dt;
+          if (spawnT <= 0 && t < DUR - 3.2) {
+            const free = spots.filter((s) => s.lit <= 0);
+            if (free.length) pick(free).lit = 3;
+            spawnT = rand(1.6, 2.8);
+          }
+          spots.forEach((s) => { if (s.lit > 0) { s.lit -= dt; if (s.lit <= 0) missed++; } });
+          g.fillStyle = "#0b0520"; g.fillRect(0, 0, w, h);
+          spots.forEach((s) => {
+            g.fillStyle = s.lit > 0 ? "#f59e0b" : "#1e1b4b"; g.strokeStyle = s.lit > 0 ? "#fde68a" : "#312e81"; g.lineWidth = 2;
+            g.beginPath(); g.roundRect(s.x, s.y, s.w, s.h, 10); g.fill(); g.stroke();
+            g.fillStyle = s.lit > 0 ? "#1c1917" : "#4c1d95"; g.font = "700 11px JetBrains Mono, monospace"; g.textAlign = "center";
+            g.fillText(s.lit > 0 ? "CAUTION" : "NOMINAL", s.x + s.w / 2, s.y + s.h / 2 + 4);
+          });
+          g.textAlign = "left";
+          g.strokeStyle = ok ? "#34d399" : "#a78bfa"; g.lineWidth = 3; g.beginPath(); g.arc(CX, CY, RING, 0, 7); g.stroke();
+          g.strokeStyle = "rgba(255,255,255,.25)"; g.lineWidth = 1; g.beginPath(); g.moveTo(CX - RING, CY); g.lineTo(CX + RING, CY); g.moveTo(CX, CY - RING); g.lineTo(CX, CY + RING); g.stroke();
+          g.fillStyle = ok ? "#34d399" : "#e9d5ff"; g.beginPath(); g.arc(sx, sy, 8, 0, 7); g.fill();
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - t))}s · ALIGNED ${Math.round(aligned / t * 100)}%`);
+          if (t >= DUR) {
+            spots.forEach((s) => { if (s.lit > 0) { missed++; s.lit = 0; } });
+            const ap = aligned / t * 100, lp = cleared + missed ? cleared / (cleared + missed) * 100 : 100;
+            ctx.end(0.5 * ap + 0.5 * lp, `Centred ${Math.round(ap)}% of the time · ${cleared} of ${cleared + missed} caution lights cleared`);
+          }
+        });
+      };
+
+      /* ---------- 22. Life Support Balancing ---------- */
+      GAMES[22] = (ctx) => {
+        const R = ctx.root, DUR = 45;
+        const v = { o2: 60, co2: 40, tmp: 50 };
+        let t = 0, tv = 0, green = 0, safe = 0;
+        const chan = (k, label, btns) => `<div class="g-chan"><div class="g-kicker">${label}</div><div class="g-bar"><i data-b="${k}"></i></div><div class="g-prompt" data-v="${k}"></div>${btns}</div>`;
+        R.innerHTML = `<div class="g-row" style="align-items:flex-start;gap:18px">
+          ${chan("o2", "O₂", `<button class="g-btn alt sm" data-a="o2up" tabindex="-1">Boost O₂ (Q)</button>`)}
+          ${chan("co2", "CO₂", `<button class="g-btn alt sm" data-a="co2dn" tabindex="-1">Scrub CO₂ (W)</button>`)}
+          ${chan("tmp", "Cabin temperature", `<div class="g-row" style="gap:6px"><button class="g-btn alt sm" data-a="tmpup" tabindex="-1">Heat (E)</button><button class="g-btn alt sm" data-a="tmpdn" tabindex="-1">Cool (R)</button></div>`)}
+        </div>`;
+        const act = { o2up: () => (v.o2 += 14), co2dn: () => (v.co2 -= 14), tmpup: () => (v.tmp += 12), tmpdn: () => (v.tmp -= 12) };
+        R.querySelectorAll("[data-a]").forEach((b) => ctx.press(b, () => act[b.dataset.a]()));
+        const KEYMAP = { KeyQ: "o2up", KeyW: "co2dn", KeyE: "tmpup", KeyR: "tmpdn" };
+        ctx.on(document, "keydown", (e) => { if (KEYMAP[e.code] && !e.repeat) act[KEYMAP[e.code]](); });
+        ctx.loop((dt) => {
+          t += dt;
+          v.o2 -= (4.5 + 2 * Math.sin(t * 0.7)) * dt;
+          v.co2 += (4.5 + 2 * Math.sin(t * 0.5 + 1)) * dt;
+          tv = clamp(tv + rand(-1, 1) * 40 * dt, -7, 7); v.tmp += tv * dt;
+          for (const k in v) v[k] = clamp(v[k], 0, 100);
+          const vals = Object.values(v);
+          if (vals.every((x) => x >= 35 && x <= 65)) green += dt;
+          if (vals.every((x) => x >= 20 && x <= 80)) safe += dt;
+          for (const k in v) {
+            R.querySelector(`[data-b="${k}"]`).style.bottom = `calc(${v[k]}% - 2px)`;
+            const el = R.querySelector(`[data-v="${k}"]`); el.textContent = `${Math.round(v[k])}%`;
+            el.style.color = v[k] < 20 || v[k] > 80 ? "#f87171" : v[k] < 35 || v[k] > 65 ? "#fbbf24" : "#34d399";
+          }
+          ctx.hud(`TIME ${Math.max(0, Math.ceil(DUR - t))}s · ALL GREEN ${Math.round(green / t * 100)}%`);
+          if (t >= DUR) ctx.end(0.6 * (green / t * 100) + 0.4 * (safe / t * 100), `All three systems in the green ${Math.round(green / t * 100)}% of the time · out of the red zone ${Math.round(safe / t * 100)}%`);
+        });
+      };
+
+      /* ---------- 23. Colour-Word Override ---------- */
+      GAMES[23] = (ctx) => {
+        const R = ctx.root, N = 20;
+        const COLS = [{ n: "RED", c: "#ef4444", k: "KeyR" }, { n: "BLUE", c: "#3b82f6", k: "KeyB" }, { n: "GREEN", c: "#22c55e", k: "KeyG" }, { n: "YELLOW", c: "#eab308", k: "KeyY" }];
+        let i = 0, correct = 0, cur = null, t0 = 0, open = false;
+        const rts = [];
+        R.innerHTML = `<div class="g-prompt">Choose the <b>ink colour</b> of the word.</div><div class="g-big" data-w style="font-size:3rem;min-height:3.4rem">&nbsp;</div>
+          <div class="g-row">${COLS.map((c, x) => `<button class="g-btn alt" data-c="${x}" tabindex="-1" style="min-width:92px">${c.n}</button>`).join("")}</div>`;
+        const W = R.querySelector("[data-w]");
+        function next() {
+          if (i >= N) { finish(); return; }
+          const word = randi(0, 3); let ink = word;
+          if (Math.random() < 0.75) { do { ink = randi(0, 3); } while (ink === word); }
+          cur = ink; i++;
+          W.textContent = COLS[word].n; W.style.color = COLS[ink].c;
+          ctx.hud(`TRIAL ${i}/${N} · ${correct} CORRECT`); t0 = performance.now(); open = true;
+        }
+        function answer(x) {
+          if (!open) return; open = false;
+          const rt = performance.now() - t0;
+          if (x === cur) { correct++; rts.push(rt); W.style.textShadow = "0 0 24px #34d399"; } else W.style.textShadow = "0 0 24px #ef4444";
+          ctx.after(() => { W.style.textShadow = ""; W.innerHTML = "&nbsp;"; ctx.after(next, 200); }, 250);
+        }
+        function finish() {
+          const a = avg(rts) || 1800, sf = clamp((1800 - a) / 1200, 0, 1);
+          ctx.end(correct / N * 100 * (0.7 + 0.3 * sf), `${correct} of ${N} correct · average response ${Math.round(a)} ms`);
+        }
+        R.querySelectorAll("[data-c]").forEach((b) => ctx.press(b, () => answer(parseInt(b.dataset.c, 10))));
+        ctx.on(document, "keydown", (e) => { const x = COLS.findIndex((c) => c.k === e.code); if (x >= 0) answer(x); });
+        ctx.after(next, 600);
+      };
+
+      /* ---------- 24 & 25. Judgment scenarios ---------- */
+      const CREW_POOL = [
+        { q: "A crewmate shows severe anxiety and trembling hands 15 minutes before an external EVA spacewalk. What is your call?", o: [
+          { t: "Stand them down immediately and assign the trained backup EVA specialist.", pts: 100 },
+          { t: "Delay the spacewalk by 20 minutes to monitor their heart rate and breathing.", pts: 60 },
+          { t: "Order them outside anyway so the mission timeline stays on schedule.", pts: 10 }],
+          why: "Crew readiness comes before the timeline. A trained backup exists precisely so that an impaired crew member never has to go outside." },
+        { q: "You learn a crewmate hid a sprained wrist during exercise so they would not be taken off the next EVA. What do you do?", o: [
+          { t: "Report it to the flight surgeon and support reassigning the EVA task.", pts: 100 },
+          { t: "Give them a lighter role on the EVA and keep the injury within the crew.", pts: 40 },
+          { t: "Say nothing. Ground control cannot see the wrist anyway.", pts: 10 }],
+          why: "Hidden injuries are a safety risk to the whole crew. Honest reporting is a core crew-resource-management norm." },
+        { q: "The commander has been awake for 20 hours and must lead a critical manoeuvre in 30 minutes. What is the best action?", o: [
+          { t: "Invoke the fatigue protocol and hand the lead to a rested deputy with the commander as reviewer.", pts: 100 },
+          { t: "Let the commander lead, with a second crew member cross-checking every step.", pts: 55 },
+          { t: "Push on. Fatigue is expected on a long mission.", pts: 10 }],
+          why: "Fatigue degrades judgment as much as alcohol does. Handing over to a rested crew member is the safest option." },
+        { q: "Two crew members disagree about a step in a written procedure. Time is not critical. What should happen?", o: [
+          { t: "Pause, follow the written checklist, and escalate the disagreement to ground for confirmation.", pts: 100 },
+          { t: "Go with the more senior crew member's judgment.", pts: 45 },
+          { t: "Skip the step and move on to the next one.", pts: 10 }],
+          why: "Procedures are written to settle disputes like this. When time allows, verify rather than rely on rank or memory." },
+        { q: "A crewmate reports a headache and mild drowsiness. The CO₂ alarm has not triggered, but readings look slightly high. Your move?", o: [
+          { t: "Stop non-essential work, check the scrubbers and CO₂ sensors, and notify ground.", pts: 100 },
+          { t: "Have them take a break and keep monitoring quietly.", pts: 45 },
+          { t: "Wait until the alarm actually sounds before acting.", pts: 10 }],
+          why: "Early symptoms are an early warning. Act on the trend before an alarm threshold forces the issue." },
+        { q: "A junior crew member seems unsure about a procedure but is reluctant to ask for help. What do you do?", o: [
+          { t: "Pause the task, invite questions, and walk through the step together.", pts: 100 },
+          { t: "Take over the task without comment.", pts: 45 },
+          { t: "Let them continue and review the result later.", pts: 20 }],
+          why: "Psychological safety matters. Making it easy to ask for help prevents errors without undermining the person." },
+        { q: "The water recycler is running at reduced capacity. Some crew want extra water for strenuous work. What is the fair approach?", o: [
+          { t: "Ration according to the resource protocol and ask ground to approve any exceptions.", pts: 100 },
+          { t: "Give extra to whoever is doing the heaviest work, without asking.", pts: 55 },
+          { t: "Let everyone use water freely until the recycler is fixed.", pts: 10 }],
+          why: "Shared consumables need transparent rules, applied fairly, with ground oversight for any exceptions." },
+        { q: "A crewmate has received distressing news from home and seems distracted during tasks. What is the best response?", o: [
+          { t: "Offer support, encourage them to talk to the flight surgeon, and adjust their workload for a while.", pts: 100 },
+          { t: "Tell them to focus on the mission and set it aside.", pts: 20 },
+          { t: "Ignore it. Personal matters are not the crew's business.", pts: 10 }],
+          why: "Crew wellbeing and safety are linked. Support plus temporary workload changes protects both the person and the mission." }
+      ];
+      const COMMAND_POOL = [
+        { q: "Telemetry drops out 40 m from station docking while closing speed is 0.2 m/s. Mission rules require a live ground lock. Action?", o: [
+          { t: "Execute an immediate station-keeping hold and back off until telemetry lock returns.", pts: 100 },
+          { t: "Slow to 0.05 m/s and continue optical alignment via the centreline camera.", pts: 55 },
+          { t: "Fire forward thrusters to complete hard capture before drift increases.", pts: 10 }],
+          why: "When a required safety input is lost, stop and create margin. The rule exists for exactly this situation." },
+        { q: "Tracking predicts a debris fragment passing within 800 m of the station in 12 minutes, with rising uncertainty. What do you order?", o: [
+          { t: "Prepare the avoidance burn, brief the crew to shelter positions, and confirm with ground.", pts: 100 },
+          { t: "Wait for more tracking data until two minutes before closest approach.", pts: 50 },
+          { t: "Ignore it. The collision probability is probably low.", pts: 10 }],
+          why: "Act early on a rising-uncertainty threat. Preparing options now costs little; waiting removes them." },
+        { q: "You lose communications for 20 minutes just before a scheduled orbit-raising burn. What is the right decision?", o: [
+          { t: "Hold the burn unless it is safety-critical, run onboard checks, and keep trying backup comms.", pts: 100 },
+          { t: "Execute only if the pre-approved contingency timeline explicitly allows it.", pts: 60 },
+          { t: "Skip the checks and burn early to make up time.", pts: 10 }],
+          why: "Irreversible actions without ground confirmation should wait unless safety requires otherwise." },
+        { q: "The primary coolant pump fails. The backup works, but no redundancy remains. What is your order?", o: [
+          { t: "Switch to the backup, reduce thermal load, notify ground, and plan a repair.", pts: 100 },
+          { t: "Keep restarting the failed pump until it holds.", pts: 35 },
+          { t: "Shut down all thermal systems to avoid further faults.", pts: 10 }],
+          why: "Protect the working path, reduce load, inform ground and plan the fix. Repeated restarts and blanket shutdowns add risk." },
+        { q: "Two redundant sensors disagree about cabin pressure. One reads nominal, one reads slowly falling. What do you do?", o: [
+          { t: "Treat it as real until proven otherwise: check a third source and hold non-essential operations.", pts: 100 },
+          { t: "Average the two readings and proceed as planned.", pts: 35 },
+          { t: "Trust the nominal reading since it is the better news.", pts: 10 }],
+          why: "Never resolve a sensor disagreement by picking the comfortable value. Verify with an independent source." },
+        { q: "A smoke alarm triggers in a storage module. No flames are visible. What is the first priority?", o: [
+          { t: "Isolate the module, power it down per the fire procedure, don masks, and inform ground.", pts: 100 },
+          { t: "Send one crew member to investigate without a mask.", pts: 20 },
+          { t: "Silence the alarm and assume it is a sensor fault.", pts: 10 }],
+          why: "Fire on a spacecraft is among the most dangerous events. Follow isolation and protection steps before investigating." },
+        { q: "A crew member reports sudden severe chest pain during a communications blackout. What do you order?", o: [
+          { t: "Follow the medical emergency checklist, stabilise the crew member, and keep trying backup comms.", pts: 100 },
+          { t: "Wait for the blackout to end before taking any action.", pts: 10 },
+          { t: "Begin an emergency return immediately without stabilising the patient.", pts: 40 }],
+          why: "Treat the patient first using the checklist while you restore communications. Premature abort decisions carry their own risks." },
+        { q: "During approach, the docking port alignment is 2° outside the allowed limit. Closing speed is slow. What is the decision?", o: [
+          { t: "Back off, re-establish alignment, and re-approach within limits.", pts: 100 },
+          { t: "Correct attitude during the final approach and try to capture.", pts: 45 },
+          { t: "Capture anyway. 2° is not much.", pts: 10 }],
+          why: "Limits are not suggestions. A clean re-approach is safer than a marginal capture." }
+      ];
+
+      function runScenarios(ctx, pool, count, timeLimit) {
+        const R = ctx.root, items = shuffle(pool).slice(0, count);
+        let i = 0, total = 0, tick = null;
+        function show() {
+          const s = items[i], opts = shuffle(s.o);
+          R.innerHTML = `<div class="g-scn">
+            <div class="g-scn-top"><span>Scenario ${i + 1} of ${count}</span><span data-t>${timeLimit ? timeLimit + "s" : ""}</span></div>
+            ${timeLimit ? `<div class="g-timerbar"><i data-bar></i></div>` : ""}
+            <p class="g-q">${s.q}</p>
+            ${opts.map((o, k) => `<button class="g-opt" data-k="${k}" tabindex="-1">${o.t}</button>`).join("")}
+            <div class="g-fb" data-fb></div>
+            <div class="g-row" data-next style="justify-content:flex-end;min-height:0"></div>
+          </div>`;
+          ctx.hud(`SCENARIO ${i + 1}/${count}`);
+          let left = timeLimit, answered = false;
+          const FB = R.querySelector("[data-fb]");
+          function resolve(o, k) {
+            if (answered) return; answered = true; clearInterval(tick);
+            const pts = o ? o.pts : 0; total += pts;
+            R.querySelectorAll("[data-k]").forEach((b, idx) => {
+              b.disabled = true;
+              const op = opts[idx];
+              if (op.pts === 100) b.classList.add("good"); else if (idx === k) b.classList.add(op.pts >= 40 ? "ok" : "bad");
+              if (idx === k && op.pts === 100) b.classList.add("good");
+            });
+            FB.innerHTML = `<b style="color:${pts >= 90 ? "#34d399" : pts >= 40 ? "#fbbf24" : "#f87171"}">${o ? `+${pts} points` : "No decision made"}</b> · ${s.why}`;
+            const nxt = R.querySelector("[data-next]");
+            nxt.innerHTML = `<button class="g-btn sm">${i + 1 >= count ? "See results" : "Next scenario"}</button>`;
+            const nb = nxt.firstElementChild;
+            nb.addEventListener("click", () => { i++; if (i >= count) ctx.end(total / count, `Average decision quality ${Math.round(total / count)} / 100 across ${count} scenarios`); else show(); });
+            nb.focus();
+          }
+          R.querySelectorAll("[data-k]").forEach((b) => ctx.press(b, () => resolve(opts[parseInt(b.dataset.k, 10)], parseInt(b.dataset.k, 10))));
+          if (timeLimit) {
+            const bar = R.querySelector("[data-bar]"), tl = R.querySelector("[data-t]");
+            tick = setInterval(() => {
+              left -= 0.1; bar.style.width = `${Math.max(0, left / timeLimit * 100)}%`; tl.textContent = `${Math.max(0, Math.ceil(left))}s`;
+              if (left <= 0) resolve(null, -1);
+            }, 100);
+          }
+        }
+        ctx.onDispose(() => clearInterval(tick));
+        show();
+      }
+      GAMES[24] = (ctx) => runScenarios(ctx, CREW_POOL, 6, 0);
+      GAMES[25] = (ctx) => runScenarios(ctx, COMMAND_POOL, 6, 20);
+
+      /* ---------- boot ---------- */
+      renderGrid();
+      const requestedExercise = Number(new URLSearchParams(window.location.search).get("exercise"));
+      if (Number.isInteger(requestedExercise)) {
+        const requestedModule = EXERCISES.find((item) => item.id === requestedExercise);
+        if (requestedModule) openExercise(requestedModule);
+      }
+    })();
+  </script>
+</body>
+</html>

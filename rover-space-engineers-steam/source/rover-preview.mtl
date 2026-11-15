@@ -1,0 +1,568 @@
+newmtl material_1
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_1_ca.webp
+
+newmtl material_2
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_2_ca.webp
+
+newmtl material_3
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_3_ca.webp
+
+newmtl material_4
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_4_ca.webp
+
+newmtl material_5
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_5_ca.webp
+
+newmtl material_6
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_6_ca.webp
+
+newmtl material_7
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_7_ca.webp
+
+newmtl material_8
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_8_ca.webp
+
+newmtl material_9
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_9_ca.webp
+
+newmtl material_10
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_10_ca.webp
+
+newmtl material_11
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_11_ca.webp
+
+newmtl material_12
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_12_ca.webp
+
+newmtl material_13
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_13_ca.webp
+
+newmtl material_14
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_14_ca.webp
+
+newmtl material_15
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_15_ca.webp
+map_d textures-webp/material_15_ca.webp
+
+newmtl material_16
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_16_ca.webp
+
+newmtl material_17
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_17_ca.webp
+
+newmtl material_18
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_18_ca.webp
+
+newmtl material_19
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_19_ca.webp
+
+newmtl material_20
+Ka 0.000 0.000 0.000
+Kd 0.000 0.000 0.000
+Ks 0.900 0.900 0.900
+d 0.350
+Ns 95.00
+illum 2
+
+newmtl material_21
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_21_ca.webp
+
+newmtl material_22
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_22_ca.webp
+
+newmtl material_23
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_23_ca.webp
+
+newmtl material_24
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_24_ca.webp
+
+newmtl material_25
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_25_ca.webp
+
+newmtl material_26
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_26_ca.webp
+map_d textures-webp/material_26_ca.webp
+
+newmtl material_27
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_27_ca.webp
+map_d textures-webp/material_27_ca.webp
+
+newmtl material_28
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_28_ca.webp
+
+newmtl material_29
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_29_ca.webp
+
+newmtl material_30
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_30_ca.webp
+
+newmtl material_31
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_31_ca.webp
+map_d textures-webp/material_31_ca.webp
+
+newmtl material_32
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_32_ca.webp
+
+newmtl material_33
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_33_ca.webp
+
+newmtl material_34
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_34_ca.webp
+
+newmtl material_35
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_35_ca.webp
+
+newmtl material_36
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_36_ca.webp
+
+newmtl material_37
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_37_ca.webp
+
+newmtl material_38
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_38_ca.webp
+
+newmtl material_39
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_39_ca.webp
+map_d textures-webp/material_39_ca.webp
+
+newmtl material_40
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_40_ca.webp
+map_d textures-webp/material_40_ca.webp
+
+newmtl material_41
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_41_ca.webp
+
+newmtl material_42
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_42_ca.webp
+
+newmtl material_43
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_43_ca.webp
+
+newmtl material_44
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_44_ca.webp
+
+newmtl material_45
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_45_ca.webp
+
+newmtl material_46
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_46_ca.webp
+
+newmtl material_47
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_47_ca.webp
+
+newmtl material_48
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_48_ca.webp
+
+newmtl material_49
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_49_ca.webp
+
+newmtl material_50
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_50_ca.webp
+
+newmtl material_51
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_51_ca.webp
+
+newmtl material_52
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_52_ca.webp
+map_d textures-webp/material_52_ca.webp
+
+newmtl material_53
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_53_ca.webp
+map_d textures-webp/material_53_ca.webp
+
+newmtl material_54
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_54_ca.webp
+map_d textures-webp/material_54_ca.webp
+
+newmtl material_55
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_55_ca.webp
+
+newmtl material_56
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+
+newmtl material_57
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_57_ca.webp
+
+newmtl material_58
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_58_ca.webp
+map_d textures-webp/material_58_ca.webp
+
+newmtl material_59
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_59_ca.webp
+
+newmtl material_60
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_60_ca.webp
+map_d textures-webp/material_60_ca.webp
+
+newmtl material_61
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 0.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_61_ca.webp
+map_d textures-webp/material_61_ca.webp
+
+newmtl material_62
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.100 0.100 0.100
+d 1.0
+Ns 95.00
+illum 2
+map_Kd textures-webp/material_62_ca.webp
+
