@@ -4,8 +4,8 @@ import { MissionSoundtrack } from '@/components/mission-soundtrack'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'HALO | Mission Health Dashboard',
-  description: 'A fictional astronaut mission dashboard for check-ins, workload, and cognitive practice.',
+  title: 'HALO | NYMPHA Mission Experience',
+  description: 'Begin the NYMPHA mission experience, explore the mission archive and briefing, then enter Yuki’s HALO mission portal.',
   generator: 'v0.app',
   icons: {
     icon: [
