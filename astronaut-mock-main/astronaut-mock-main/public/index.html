@@ -203,6 +203,57 @@
             line-height: 1.75;
         }
 
+        .film-section {
+            position: relative;
+            z-index: 1;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 72px max(7.5vw, calc((100vw - 1200px) / 2));
+            background: linear-gradient(180deg, rgba(7, 4, 15, .52), rgba(7, 4, 15, .88));
+        }
+
+        .film-copy {
+            max-width: 720px;
+            margin-bottom: 28px;
+        }
+
+        .film-copy h2 {
+            margin-bottom: 12px;
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            letter-spacing: -.04em;
+            line-height: 1.1;
+        }
+
+        .film-copy p {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .film-watch-link {
+            display: inline-flex;
+            margin-top: 14px;
+            color: #d7a2ff;
+            text-decoration-color: rgba(215, 162, 255, .45);
+            text-underline-offset: 4px;
+        }
+
+        .film-frame {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border: 1px solid rgba(209, 171, 245, .2);
+            border-radius: 18px;
+            background: #07040f;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .35);
+        }
+
+        .film-frame iframe {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
         .story-button {
             display: inline-flex;
             align-items: center;
@@ -416,6 +467,14 @@
                 font-size: .94rem;
             }
 
+            .film-section {
+                padding: 52px 22px;
+            }
+
+            .film-frame {
+                border-radius: 12px;
+            }
+
             .section-heading h2,
             .section-heading p {
                 max-width: 64%;
@@ -474,6 +533,7 @@
         <a class="brand" href="#home">HALO AI</a>
         <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open navigation">☰</button>
         <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+            <a href="#japan-film">Japan film</a>
             <a href="#workflow">Workflow</a>
             <a href="#modules">Countermeasures</a>
             <a href="#postflight">Postflight</a>
@@ -496,6 +556,25 @@
                     <span class="play-icon" aria-hidden="true">▶</span>
                     <span>Explore mission archive</span>
                 </a>
+            </div>
+        </section>
+
+        <section class="film-section" id="japan-film" aria-labelledby="film-heading">
+            <div class="film-copy">
+                <div class="eyebrow">A MOMENT OF CALM</div>
+                <h2 id="film-heading">A quiet view of Japan.</h2>
+                <p>Take a pause with this scenic 4K film and calming music.</p>
+                <a class="film-watch-link" href="https://vimeo.com/1246968373" target="_blank" rel="noopener noreferrer">Open on Vimeo</a>
+            </div>
+            <div class="film-frame">
+                <iframe
+                    src="https://player.vimeo.com/video/1246968373?autopause=0&amp;player_id=0&amp;app_id=58479"
+                    title="Japan 4K - Scenic Relaxation Film With Calming Music"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    loading="lazy"
+                    allowfullscreen>
+                </iframe>
             </div>
         </section>
 
