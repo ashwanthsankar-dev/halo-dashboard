@@ -25,7 +25,9 @@
             throw new Error('Unable to resolve the mission soundtrack asset path.');
         }
         const scriptUrl = new URL(script.src);
-        audio.src = '/mission-soundtrack.mp3';
+        audio.src = scriptUrl.pathname === '/api/mission-soundtrack'
+            ? '/mission-soundtrack.mp3'
+            : new URL('./Cornfield%20Chase%20%E2%80%A2%20Hans%20Zimmer).mp3', scriptUrl).href;
         document.body.append(audio);
     }
 

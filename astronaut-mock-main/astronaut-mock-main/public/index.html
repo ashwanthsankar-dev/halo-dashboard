@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#03000a">
+    <title>HALO AI | Astronaut Cognitive Support</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://threejs.org" crossorigin>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/curves/NURBSUtils.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/curves/NURBSCurve.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/fflate@0.6.9/umd/index.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            color-scheme: dark;
+            --text: #f5efff;
+            --muted: #b8accb;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background: #07040f;
+        }
+
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: radial-gradient(ellipse at 76% 74%, rgba(80, 19, 130, .22), transparent 42%), #03000a;
+            color: var(--text);
+        }
+
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid #d7a2ff;
+            outline-offset: 4px;
+        }
+
+        #webgl-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            width: 100%;
+            height: 190vh;
+            height: 190svh;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        #webgl-container canvas {
+            display: block;
+            pointer-events: none;
+        }
+
+        .site-header {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: min(calc(100% - 96px), 1440px);
+            height: 92px;
+            margin: 0 auto;
+        }
+
+        .brand {
+            color: var(--text);
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: .16em;
+            text-decoration: none;
+        }
+
+        .primary-nav {
+            display: flex;
+            align-items: center;
+            gap: clamp(20px, 3vw, 46px);
+        }
+
+        .primary-nav a {
+            color: #d3c9df;
+            font-size: .85rem;
+            text-decoration: none;
+            transition: color 160ms ease;
+        }
+
+        .primary-nav a:hover,
+        .primary-nav a:focus-visible {
+            color: #d7a2ff;
+        }
+
+        .menu-toggle {
+            display: none;
+            border: 0;
+            background: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .soundtrack-control {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 5;
+            display: grid;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            place-items: center;
+            border: 1px solid rgba(223, 195, 255, .3);
+            border-radius: 50%;
+            background: rgba(15, 8, 24, .9);
+            color: var(--text);
+            font-size: 1rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .28);
+            cursor: pointer;
+        }
+
+        .soundtrack-control:hover,
+        .soundtrack-control:focus-visible {
+            border-color: rgba(215, 162, 255, .75);
+            background: rgba(35, 17, 52, .96);
+        }
+
+        .soundtrack-icon {
+            color: #d7a2ff;
+            line-height: 1;
+        }
+
+        .hero {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: flex-start;
+            min-height: calc(100vh - 92px);
+            min-height: calc(100svh - 92px);
+            padding-top: 92px;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .hero-title {
+            position: absolute;
+            z-index: 0;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(6rem, 17vw, 15rem);
+            font-weight: 900;
+            letter-spacing: .025em;
+            line-height: .9;
+            white-space: nowrap;
+            background: linear-gradient(180deg, rgba(226, 190, 255, .58), rgba(168, 93, 239, .3));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 38px rgba(165, 79, 255, .3));
+            pointer-events: none;
+        }
+
+        .hero-copy {
+            position: relative;
+            z-index: 1;
+            width: min(570px, 50vw);
+            margin: 4.5rem 0 0 max(7.5vw, calc((100vw - 1440px) / 2));
+        }
+
+        .eyebrow {
+            margin-bottom: 20px;
+            color: #c6b5d7;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .28em;
+            line-height: 1.5;
+        }
+
+        .hero-copy h2 {
+            margin-bottom: 22px;
+            color: #fff;
+            font-size: clamp(2.4rem, 4.2vw, 4.5rem);
+            font-weight: 700;
+            letter-spacing: -.045em;
+            line-height: 1.04;
+        }
+
+        .hero-copy p {
+            max-width: 500px;
+            color: var(--muted);
+            font-size: clamp(.95rem, 1.2vw, 1.08rem);
+            line-height: 1.75;
+        }
+
+        .story-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 13px;
+            margin-top: 30px;
+            padding: 11px 18px 11px 12px;
+            border: 1px solid rgba(223, 195, 255, .26);
+            border-radius: 999px;
+            background: rgba(248, 239, 255, .94);
+            color: #191020;
+            font-size: .88rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 0 30px rgba(160, 63, 240, .14);
+            transition: transform 160ms ease, box-shadow 160ms ease;
+        }
+
+        .story-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 38px rgba(176, 76, 255, .3);
+        }
+
+        .play-icon {
+            display: grid;
+            width: 28px;
+            height: 28px;
+            place-items: center;
+            border-radius: 50%;
+            background: #7625bd;
+            color: #fff;
+            font-size: .7rem;
+            padding-left: 2px;
+        }
+
+        .workflow {
+            position: relative;
+            z-index: 1;
+            padding: 100px max(7.5vw, calc((100vw - 1440px) / 2)) 110px;
+            background: linear-gradient(180deg, rgba(7, 4, 15, .04) 0%, rgba(7, 4, 15, .42) 24%, rgba(7, 4, 15, .94) 58%, #07040f 100%);
+        }
+
+        .workflow > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-heading {
+            max-width: 720px;
+            margin-bottom: 42px;
+        }
+
+        .section-heading h2 {
+            margin-bottom: 14px;
+            font-size: clamp(2rem, 4vw, 3.6rem);
+            letter-spacing: -.04em;
+        }
+
+        .section-heading p {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .step-card {
+            min-height: 230px;
+            padding: 24px;
+            border: 1px solid rgba(209, 171, 245, .14);
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(37, 19, 55, .78), rgba(12, 8, 21, .88));
+        }
+
+        .step-number {
+            display: inline-block;
+            margin-bottom: 26px;
+            color: #cb8cff;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .16em;
+        }
+
+        .step-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.08rem;
+        }
+
+        .step-card p {
+            color: var(--muted);
+            font-size: .9rem;
+            line-height: 1.65;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .detail-panel {
+            padding: 28px;
+            border: 1px solid rgba(209, 171, 245, .1);
+            border-radius: 18px;
+            background: rgba(18, 12, 29, .88);
+        }
+
+        .detail-panel h3 {
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+
+        .detail-panel p,
+        .detail-panel li {
+            color: var(--muted);
+            font-size: .92rem;
+            line-height: 1.7;
+        }
+
+        .detail-panel ul {
+            padding-left: 20px;
+        }
+
+        .disclaimer {
+            position: relative;
+            z-index: 1;
+            padding: 24px max(7.5vw, calc((100vw - 1440px) / 2));
+            background: #07040f;
+            color: #a99bb8;
+            font-size: .8rem;
+            line-height: 1.6;
+        }
+
+        .portal-link {
+            color: #d7a2ff;
+            text-decoration-color: rgba(215, 162, 255, .45);
+            text-underline-offset: 4px;
+        }
+
+        @media (max-width: 760px) {
+            .site-header {
+                width: calc(100% - 40px);
+                height: 76px;
+            }
+
+            .soundtrack-control {
+                right: 12px;
+                bottom: 12px;
+            }
+
+            .menu-toggle {
+                position: relative;
+                z-index: 2;
+                display: block;
+            }
+
+            .primary-nav {
+                position: absolute;
+                top: 66px;
+                right: 0;
+                left: 0;
+                display: none;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0;
+                padding: 8px 18px;
+                border: 1px solid rgba(211, 176, 245, .12);
+                border-radius: 14px;
+                background: rgba(12, 5, 22, .96);
+                backdrop-filter: blur(16px);
+            }
+
+            .primary-nav.is-open {
+                display: flex;
+            }
+
+            .primary-nav a {
+                width: 100%;
+                padding: 12px 0;
+            }
+
+            .hero {
+                min-height: calc(100svh - 76px);
+                align-items: flex-start;
+                padding-top: 76px;
+            }
+
+            .hero-title {
+                top: 13%;
+                left: 50%;
+                font-size: clamp(4.5rem, 19vw, 8rem);
+            }
+
+            .hero-copy {
+                width: auto;
+                max-width: 430px;
+                margin: 3rem 24px 0;
+                padding: 18px;
+                border-radius: 16px;
+                background: rgba(3, 0, 10, .76);
+            }
+
+            .hero-copy h2 {
+                font-size: clamp(2rem, 9vw, 3rem);
+            }
+
+            .hero-copy p {
+                font-size: .94rem;
+            }
+
+            .section-heading h2,
+            .section-heading p {
+                max-width: 64%;
+            }
+
+            .workflow {
+                padding: 72px 22px;
+                background: linear-gradient(180deg, rgba(7, 4, 15, .06) 0%, rgba(7, 4, 15, .54) 20%, rgba(7, 4, 15, .96) 52%, #07040f 100%);
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-card {
+                min-height: auto;
+            }
+
+            .step-number {
+                margin-bottom: 16px;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .disclaimer {
+                padding: 22px;
+            }
+        }
+
+        @media (min-width: 761px) and (max-width: 1050px) {
+            .steps-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+        }
+    </style>
+    <script src="mission-soundtrack.js" defer></script>
+</head>
+<body>
+    <div id="webgl-container" role="img" aria-label="Animated 3D Earth with glowing city lights and a floating astronaut"></div>
+    <audio id="soundtrack" preload="none" loop src="./Cornfield%20Chase%20%E2%80%A2%20Hans%20Zimmer).mp3"></audio>
+
+    <header class="site-header">
+        <a class="brand" href="#home">HALO AI</a>
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open navigation">☰</button>
+        <nav class="primary-nav" id="primary-nav" aria-label="Main navigation">
+            <a href="#home">Overview</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#modules">Countermeasures</a>
+            <a href="#postflight">Postflight</a>
+            <a href="#prototype">About HALO</a>
+        </nav>
+    </header>
+
+    <button class="soundtrack-control" id="soundtrack-toggle" type="button" aria-pressed="false" aria-label="Play soundtrack" title="Play soundtrack">
+        <span class="soundtrack-icon" aria-hidden="true">♫</span>
+    </button>
+
+    <main>
+        <section class="hero" id="home" aria-labelledby="hero-heading">
+            <h1 class="hero-title" aria-hidden="true">HALO AI</h1>
+            <div class="hero-copy">
+                <div class="eyebrow">HELPING ASTRONAUTS ON LONG MISSIONS</div>
+                <h2 id="hero-heading">A clearer picture of cognitive wellbeing.</h2>
+                <p>HALO AI brings together each astronaut’s personal cognitive baseline and daily check-ins to spot meaningful changes and guide timely support throughout a mission.</p>
+                <a class="story-button" href="mission-archive.html">
+                    <span class="play-icon" aria-hidden="true">▶</span>
+                    <span>Explore mission archive</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="workflow" id="workflow" aria-labelledby="workflow-heading">
+            <div class="section-heading">
+                <div class="eyebrow">BEFORE, DURING, AND AFTER FLIGHT</div>
+                <h2 id="workflow-heading">Support that starts with each astronaut.</h2>
+                <p>HALO AI learns what is usual for each person, checks in during the mission, and offers a little extra support when it may help.</p>
+            </div>
+
+            <div class="steps-grid">
+                <article class="step-card">
+                    <span class="step-number">01 / BEFORE FLIGHT</span>
+                    <h3>Before launch</h3>
+                    <p>Before launch, each astronaut takes short focus and memory tests and has a DTI scan, which shows brain connections. This gives HALO AI a personal starting point.</p>
+                </article>
+                <article class="step-card">
+                    <span class="step-number">02 / DAILY CHECK-IN</span>
+                    <h3>Check in during flight</h3>
+                    <p>During the mission, quick check-ins help build a picture of each astronaut’s usual sleep, stress, and workload over time.</p>
+                </article>
+                <article class="step-card">
+                    <span class="step-number">03 / EXTRA SUPPORT</span>
+                    <h3>Offer a timely activity</h3>
+                    <p>If a change continues, HALO AI gives an early heads-up and may suggest a short exercise. Sequential Recall, for example, helps someone practice remembering a series.</p>
+                </article>
+                <article class="step-card">
+                    <span class="step-number">04 / AFTER FLIGHT</span>
+                    <h3>Continue the journey</h3>
+                    <p>After landing, mission check-ins and follow-up can help each astronaut reflect on their experience and transition home.</p>
+                </article>
+            </div>
+
+            <div class="details-grid">
+                <article class="detail-panel" id="modules">
+                    <h3>See how it goes</h3>
+                    <p>After the exercise, HALO AI checks whether results are moving back toward the astronaut’s usual level.</p>
+                </article>
+                <article class="detail-panel" id="postflight">
+                    <h3>After the mission</h3>
+                    <p>Back on Earth, a second DTI scan is compared with the first scan and the check-ins from the mission.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="disclaimer" id="prototype">
+        HALO AI is a research decision-support prototype, not a medical diagnostic tool.
+        Mission content is fictional and illustrative; it does not represent NASA endorsement, medical validation, or mission clearance.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('webgl-container');
+            const menuToggle = document.getElementById('menu-toggle');
+            const primaryNav = document.getElementById('primary-nav');
+            const soundtrack = document.getElementById('soundtrack');
+            const soundtrackToggle = document.getElementById('soundtrack-toggle');
+            const soundtrackIcon = soundtrackToggle.querySelector('.soundtrack-icon');
+
+            menuToggle.addEventListener('click', () => {
+                const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+                menuToggle.setAttribute('aria-expanded', String(!isOpen));
+                menuToggle.setAttribute('aria-label', isOpen ? 'Open navigation' : 'Close navigation');
+                primaryNav.classList.toggle('is-open', !isOpen);
+            });
+
+            primaryNav.addEventListener('click', (event) => {
+                if (event.target instanceof HTMLAnchorElement) {
+                    primaryNav.classList.remove('is-open');
+                    menuToggle.setAttribute('aria-expanded', 'false');
+                    menuToggle.setAttribute('aria-label', 'Open navigation');
+                }
+            });
+
+            function updateSoundtrackControl(isPlaying) {
+                soundtrackToggle.setAttribute('aria-pressed', String(isPlaying));
+                soundtrackToggle.setAttribute('aria-label', isPlaying ? 'Turn soundtrack off' : 'Play soundtrack');
+                soundtrackToggle.title = isPlaying ? 'Turn soundtrack off' : 'Play soundtrack';
+                soundtrackIcon.textContent = isPlaying ? '♫' : '♪';
+            }
+
+            soundtrackToggle.addEventListener('click', () => {
+                if (soundtrack.paused) {
+                    soundtrack.play().catch((error) => console.error('Unable to play the soundtrack.', error));
+                } else {
+                    soundtrack.pause();
+                }
+            });
+            soundtrack.addEventListener('play', () => updateSoundtrackControl(true));
+            soundtrack.addEventListener('pause', () => updateSoundtrackControl(false));
+            soundtrack.addEventListener('error', () => console.error('Unable to load the soundtrack file.'));
+
+            if (typeof THREE === 'undefined') {
+                console.error('Three.js did not load; the HALO page content is still available.');
+                return;
+            }
+
+            const scene = new THREE.Scene();
+            const starCanvas = document.createElement('canvas');
+            starCanvas.width = 2048;
+            starCanvas.height = 1024;
+            const starContext = starCanvas.getContext('2d');
+            starContext.fillStyle = '#03000a';
+            starContext.fillRect(0, 0, starCanvas.width, starCanvas.height);
+            for (let index = 0; index < 2800; index += 1) {
+                const x = Math.random() * starCanvas.width;
+                const y = Math.random() * starCanvas.height;
+                const radius = Math.random() > .994 ? 1.15 : .45;
+                starContext.fillStyle = Math.random() > .68
+                    ? `rgba(198, 129, 255, ${.35 + Math.random() * .55})`
+                    : `rgba(235, 224, 255, ${.3 + Math.random() * .6})`;
+                starContext.beginPath();
+                starContext.arc(x, y, radius, 0, Math.PI * 2);
+                starContext.fill();
+            }
+            const starTexture = new THREE.CanvasTexture(starCanvas);
+            starTexture.mapping = THREE.EquirectangularReflectionMapping;
+            scene.background = starTexture;
+
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, .1, 1000);
+            camera.position.z = container.clientWidth <= 760 ? 10.5 : 3.45;
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+            container.appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = .05;
+            controls.enableZoom = false;
+
+            scene.add(new THREE.AmbientLight(0x6b4698, .82));
+            const sunLight = new THREE.DirectionalLight(0xb678ff, 1.1);
+            sunLight.position.set(4, 2, 5);
+            scene.add(sunLight);
+            const fillLight = new THREE.DirectionalLight(0x7546b2, .72);
+            fillLight.position.set(-4, 1, 4);
+            scene.add(fillLight);
+            const rimLight = new THREE.DirectionalLight(0x477cff, .62);
+            rimLight.position.set(5, 0, 4);
+            scene.add(rimLight);
+
+            const earthGroup = new THREE.Group();
+            earthGroup.position.set(container.clientWidth <= 760 ? 0 : .3, 0, 0);
+            earthGroup.scale.setScalar(container.clientWidth <= 760 ? 1.15 : .92);
+            scene.add(earthGroup);
+            const textureLoader = new THREE.TextureLoader();
+            const radius = 1;
+            const earthGeometry = new THREE.SphereGeometry(radius, 48, 48);
+            const earthMaterial = new THREE.MeshPhongMaterial({
+                map: textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg'),
+                specularMap: textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
+                bumpMap: textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg'),
+                bumpScale: .025,
+                color: 0x9264c4,
+                specular: new THREE.Color(0x5c268c),
+                shininess: 10
+            });
+            const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
+            earthGroup.add(earthMesh);
+
+            const cityLights = new THREE.Mesh(earthGeometry, new THREE.ShaderMaterial({
+                uniforms: {
+                    uCityMap: { value: textureLoader.load('https://threejs.org/examples/textures/planets/earth_lights_2048.png') },
+                    uSunDirection: { value: sunLight.position.clone().normalize() },
+                    uLightColor: { value: new THREE.Color(0xb34cff) }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    varying vec3 vWorldNormal;
+                    void main() {
+                        vUv = uv;
+                        vWorldNormal = normalize(mat3(modelMatrix) * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform sampler2D uCityMap;
+                    uniform vec3 uSunDirection;
+                    uniform vec3 uLightColor;
+                    varying vec2 vUv;
+                    varying vec3 vWorldNormal;
+                    void main() {
+                        vec3 city = texture2D(uCityMap, vUv).rgb;
+                        float cityIntensity = max(max(city.r, city.g), city.b);
+                        float sunFacing = dot(normalize(vWorldNormal), normalize(uSunDirection));
+                        float nightSide = 1.0 - smoothstep(-0.12, 0.18, sunFacing);
+                        float intensity = cityIntensity * nightSide;
+                        gl_FragColor = vec4(uLightColor * intensity, intensity);
+                    }
+                `,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            }));
+            cityLights.scale.setScalar(1.002);
+            earthGroup.add(cityLights);
+
+            const cloudsMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(radius + .01, 48, 48),
+                new THREE.MeshPhongMaterial({
+                    map: textureLoader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png'),
+                    transparent: true,
+                    opacity: .07,
+                    color: 0x9a6bc8,
+                    depthWrite: false
+                })
+            );
+            earthGroup.add(cloudsMesh);
+
+            const astronautAnchor = new THREE.Group();
+            const isMobile = container.clientWidth <= 760;
+            let astronautBaseY = isMobile ? -.9 : -.1;
+            astronautAnchor.position.set(isMobile ? .42 : .61, astronautBaseY, isMobile ? 1.55 : 1.15);
+            scene.add(astronautAnchor);
+
+            function addFallbackAstronaut() {
+                const astronaut = new THREE.Group();
+                const suit = new THREE.MeshStandardMaterial({ color: 0xe7dff5, roughness: .48, metalness: .06 });
+                const trim = new THREE.MeshStandardMaterial({ color: 0x462e78, roughness: .38, metalness: .14 });
+                const visor = new THREE.MeshStandardMaterial({ color: 0xff9b54, emissive: 0xff5d20, emissiveIntensity: .8, metalness: .55, roughness: .22 });
+                function sphere(material, x, y, z, sx, sy, sz) {
+                    const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), material);
+                    mesh.position.set(x, y, z);
+                    mesh.scale.set(sx, sy, sz);
+                    astronaut.add(mesh);
+                }
+                sphere(suit, 0, 0, 0, .22, .3, .15);
+                sphere(suit, 0, .39, .03, .22, .22, .2);
+                sphere(trim, 0, .4, .18, .16, .15, .07);
+                sphere(visor, 0, .41, .235, .115, .12, .035);
+                sphere(trim, -.27, .02, 0, .1, .2, .1);
+                sphere(trim, .27, .02, 0, .1, .2, .1);
+                sphere(suit, -.1, -.37, 0, .09, .2, .11);
+                sphere(suit, .1, -.37, 0, .09, .2, .11);
+                sphere(trim, 0, -.01, -.16, .15, .17, .08);
+                astronaut.scale.setScalar(isMobile ? .9 : 1.15);
+                astronaut.rotation.z = -.1;
+                astronautAnchor.add(astronaut);
+            }
+
+            const fbxLoader = typeof THREE.FBXLoader === 'function' ? new THREE.FBXLoader() : null;
+            if (fbxLoader) {
+                fbxLoader.load(
+                    './Astronaut_v1%20edit.fbx',
+                    (model) => {
+                        model.traverse((object) => {
+                            if (object instanceof THREE.Mesh) {
+                                object.frustumCulled = false;
+                                const materials = Array.isArray(object.material) ? object.material : [object.material];
+                                materials.forEach((material) => {
+                                    if (material) material.side = THREE.DoubleSide;
+                                });
+                            }
+                        });
+                        const originalBounds = new THREE.Box3().setFromObject(model);
+                        const originalSize = originalBounds.getSize(new THREE.Vector3());
+                        if (originalSize.x > originalSize.y && originalSize.x >= originalSize.z) model.rotation.z += Math.PI / 2;
+                        else if (originalSize.z > originalSize.y && originalSize.z > originalSize.x) model.rotation.x -= Math.PI / 2;
+                        const bounds = new THREE.Box3().setFromObject(model);
+                        const size = bounds.getSize(new THREE.Vector3());
+                        const center = bounds.getCenter(new THREE.Vector3());
+                        if (!Number.isFinite(size.y) || size.y <= 0) throw new Error('The astronaut model has invalid dimensions.');
+                        const modelScale = (isMobile ? 1 : .95) / size.y;
+                        model.scale.setScalar(modelScale);
+                        model.position.copy(center).multiplyScalar(-modelScale);
+                        astronautAnchor.add(model);
+                    },
+                    undefined,
+                    (error) => {
+                        console.error('Unable to load the local astronaut model; using a simple 3D fallback.', error);
+                        addFallbackAstronaut();
+                    }
+                );
+            } else {
+                addFallbackAstronaut();
+            }
+
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            let animationFrame = 0;
+            function animate() {
+                animationFrame = 0;
+                if (document.hidden) return;
+                earthMesh.rotation.y += .0011;
+                cloudsMesh.rotation.y += .0013;
+                cityLights.rotation.y = earthMesh.rotation.y;
+                if (!reducedMotion) {
+                    astronautAnchor.position.y = astronautBaseY + Math.sin(performance.now() * .0012) * .035;
+                    astronautAnchor.rotation.y = Math.sin(performance.now() * .0007) * .12;
+                }
+                controls.update();
+                renderer.render(scene, camera);
+                if (!reducedMotion) animationFrame = requestAnimationFrame(animate);
+            }
+            function requestRender() {
+                if (reducedMotion) {
+                    if (!document.hidden) animate();
+                } else if (!document.hidden && !animationFrame) {
+                    animationFrame = requestAnimationFrame(animate);
+                }
+            }
+            const visibilityObserver = 'IntersectionObserver' in window
+                ? new IntersectionObserver((entries) => {
+                    const visible = entries.some((entry) => entry.isIntersecting);
+                    if (visible) requestRender();
+                    else if (animationFrame) {
+                        cancelAnimationFrame(animationFrame);
+                        animationFrame = 0;
+                    }
+                }, { rootMargin: '80px' })
+                : null;
+            if (visibilityObserver) visibilityObserver.observe(container);
+            else requestRender();
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = 0;
+                } else {
+                    requestRender();
+                }
+            });
+            window.addEventListener('resize', () => {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                if (!width || !height) return;
+                camera.aspect = width / height;
+                camera.position.z = width <= 760 ? 10.5 : 3.45;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+                const mobile = width <= 760;
+                earthGroup.position.set(mobile ? 0 : .3, 0, 0);
+                earthGroup.scale.setScalar(mobile ? 1.15 : .92);
+                astronautBaseY = mobile ? -.9 : -.1;
+                astronautAnchor.position.set(mobile ? .42 : .61, astronautBaseY, mobile ? 1.55 : 1.15);
+                requestRender();
+            });
+            requestRender();
+        });
+    </script>
+</body>
+</html>
