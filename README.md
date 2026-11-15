@@ -1,12 +1,6 @@
 # HALO mission dashboard
 
-The NYMPHA mission briefing's **Enter Mission Control** button opens the Next.js app in `astronaut-mock-main/astronaut-mock-main`:
-
-```powershell
-cd astronaut-mock-main/astronaut-mock-main
-corepack pnpm install
-corepack pnpm dev
-```
+The NYMPHA mission briefing's **Enter Mission Control** button opens the Next.js app in `astronaut-mock-main/astronaut-mock-main`
 
 The dashboard creates **250 NYMPHA mission records** in memory whenever it loads. These generated preview records include sleep, stress, workload, heart rate, blood pressure, and rehabilitation precision, reaction-time, and attention indicators. The latest 15 days are shaped to show a declining trend. They are not actual astronaut measurements or live mission telemetry, and must not be used for health decisions.
 
