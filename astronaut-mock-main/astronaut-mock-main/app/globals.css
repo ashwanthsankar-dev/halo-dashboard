@@ -617,8 +617,8 @@ body .halo-shell .space-backdrop{background-image:linear-gradient(90deg,rgba(3,8
 .belonging-details span{padding:7px 10px;border:1px solid rgba(151,184,222,.19);border-radius:18px;background:rgba(7,19,37,.58);color:#c3d4e9;font-size:10px}
 .belonging-start{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin-top:3px;padding:0 17px}
 .belonging-start svg{width:16px;height:16px}
-.belonging-stage{position:fixed;inset:0;z-index:1100;overflow:hidden;background:#02050b}
-.belonging-video{position:absolute;top:50%;left:50%;z-index:0;width:auto;height:auto;max-width:100vw;max-height:100vh;object-fit:contain;background:#02050b;opacity:0;transform:translate(-50%,-50%);transition:opacity .45s ease}
+.belonging-stage{position:fixed;inset:0;z-index:1300;overflow:hidden;background:#02050b}
+.belonging-video{position:absolute;inset:0;z-index:0;width:100%;height:100%;border:0;background:#02050b;opacity:0;transition:opacity .45s ease}
 .belonging-video.is-visible{opacity:1}
 .belonging-slide{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;animation:belonging-scene-enter .8s ease both}
 .belonging-stage-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(2,5,12,.2),rgba(2,5,12,.25) 35%,rgba(2,5,12,.7))}
@@ -629,12 +629,11 @@ body .halo-shell .space-backdrop{background-image:linear-gradient(90deg,rgba(3,8
 .belonging-loading-track{height:4px;margin-top:20px;overflow:hidden;border-radius:4px;background:rgba(211,228,249,.21)}
 .belonging-loading-track i{display:block;height:100%;border-radius:inherit;background:#a6d8ff;transition:width .8s linear}
 .belonging-close{position:absolute;top:19px;right:20px;z-index:5;min-height:36px;padding:0 14px;border:1px solid rgba(229,239,250,.32);border-radius:10px;background:rgba(7,13,23,.68);color:#f4f7fb;backdrop-filter:blur(8px)}
-.belonging-buffering,.belonging-video-error-overlay{position:absolute;top:50%;left:50%;z-index:3;max-width:min(90vw,500px);margin:0;padding:16px 20px;border:1px solid rgba(216,231,247,.2);border-radius:12px;background:rgba(3,9,20,.78);color:#edf4fc;text-align:center;transform:translate(-50%,-50%)}
-.belonging-video-error{color:#ffe0e4!important}
-.belonging-playback-prompt{position:absolute;bottom:66px;left:50%;z-index:4;display:flex;align-items:center;justify-content:center;gap:12px;width:min(92vw,560px);padding:11px 14px;border:1px solid rgba(216,231,247,.2);border-radius:12px;background:rgba(3,9,20,.82);color:#e8f1fb;font-size:11px;text-align:center;transform:translateX(-50%)}
-.belonging-playback-prompt .secondary-button{flex:0 0 auto;min-height:34px;padding:0 12px}
+.belonging-buffering{position:absolute;top:50%;left:50%;z-index:3;max-width:min(90vw,500px);margin:0;padding:16px 20px;border:1px solid rgba(216,231,247,.2);border-radius:12px;background:rgba(3,9,20,.78);color:#edf4fc;text-align:center;transform:translate(-50%,-50%)}
+.belonging-vimeo-fallback{position:absolute;bottom:18px;left:20px;z-index:4;display:flex;min-height:36px;align-items:center;padding:0 14px;border:1px solid rgba(229,239,250,.32);border-radius:10px;background:rgba(7,13,23,.68);color:#f4f7fb;text-decoration:none;backdrop-filter:blur(8px)}
+.belonging-vimeo-fallback:focus-visible{outline:2px solid #a6d8ff;outline-offset:3px}
 @keyframes belonging-scene-enter{from{opacity:.55}to{opacity:1}}
-@media(max-width:760px){.focused-dashboard-content>.belonging-page{width:100%;min-height:calc(100dvh - 128px);margin:24px auto 0;padding:26px 20px}.belonging-description{font-size:13px}.belonging-loading-copy{padding:20px 16px}.belonging-close{top:12px;right:12px}.belonging-playback-prompt{bottom:62px;flex-direction:column;gap:8px}}
+@media(max-width:760px){.focused-dashboard-content>.belonging-page{width:100%;min-height:calc(100dvh - 128px);margin:24px auto 0;padding:26px 20px}.belonging-description{font-size:13px}.belonging-loading-copy{padding:20px 16px}.belonging-close{top:12px;right:12px}.belonging-vimeo-fallback{bottom:12px;left:12px}}
 .mission-soundtrack-widget{position:fixed;right:18px;bottom:18px;z-index:1200;display:grid;justify-items:end;gap:5px}
 .mission-soundtrack-control{min-height:38px;padding:0 13px;border:1px solid rgba(151,184,222,.3);border-radius:22px;background:rgba(6,14,30,.88);color:#dbe9f8;font-size:10px;font-weight:650;backdrop-filter:blur(8px);cursor:pointer}
 .mission-soundtrack-control:hover,.mission-soundtrack-control:focus-visible{border-color:rgba(148,205,255,.7);background:rgba(13,28,49,.97)}
