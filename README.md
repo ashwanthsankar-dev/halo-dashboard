@@ -1,12 +1,18 @@
 # HALO mission dashboard
 
-The NYMPHA mission briefing's **Enter Mission Control** button opens the Next.js app in `astronaut-mock-main/astronaut-mock-main`:
+The website flow is landing page → mission archive → NYMPHA briefing → Yuki dashboard. The briefing's **Enter Mission Control** button opens the same-origin Next.js route at `/mission-control?page=yuki`.
 
 ```powershell
 cd astronaut-mock-main/astronaut-mock-main
 corepack pnpm install
 corepack pnpm dev
 ```
+
+## Deploying on Vercel
+
+The Next.js app serves the landing page from `public/index.html`, the mission archive and briefing from `public/`, and the dashboard at `/mission-control`. In the Vercel project serving `halowellness.life`, set **Root Directory** to `astronaut-mock-main/astronaut-mock-main`, keep the Next.js build defaults, and retain the existing custom domain. The root rewrite keeps `/` on the landing page. Verify the complete flow on a preview deployment before promoting it to production.
+
+Add `GROQ_API_KEY` as a Vercel server environment variable only if Groq-powered Yuki replies are needed.
 
 The dashboard creates **250 NYMPHA mission records** in memory whenever it loads. These generated preview records include sleep, stress, workload, heart rate, blood pressure, and rehabilitation precision, reaction-time, and attention indicators. The latest 15 days are shaped to show a declining trend. They are not actual astronaut measurements or live mission telemetry, and must not be used for health decisions.
 

@@ -1,5 +1,5 @@
-import { HaloDashboard } from '@/components/halo-dashboard'
+import { redirect } from 'next/navigation'
 
 export default function Page() {
-  return <HaloDashboard />
+  redirect('/index.html')
 }
