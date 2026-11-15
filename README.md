@@ -46,7 +46,7 @@ The dashboard does not connect to browser local storage or a Python backend. Exp
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-149eca?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6?logo=typescript)
-![Status](https://img.shields.io/badge/status-prototype-orange)
+![Status]MVP
 
 </div>
 
