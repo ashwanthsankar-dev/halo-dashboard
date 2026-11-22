@@ -1,5 +1,14 @@
+import { redirect } from 'next/navigation'
 import { HaloDashboard } from '@/components/halo-dashboard'
 
-export default function Page() {
-  return <HaloDashboard />
+type PageProps = {
+  searchParams: Promise<{ page?: string }>
+}
+
+export default async function Page({ searchParams }: PageProps) {
+  const { page } = await searchParams
+
+  if (page === 'yuki') return <HaloDashboard />
+
+  redirect('/index.html')
 }
