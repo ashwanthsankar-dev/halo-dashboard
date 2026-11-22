@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type PointerEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { Bot, ExternalLink, FlaskConical, Gamepad2, HeartHandshake, MousePointer2, Play, Send } from 'lucide-react'
 import { localDateKey, type CheckIn, type GameActivity, type GameKind, type HaloData, type ResearchReference, type TaskOutcome, type TaskSession, type TaskTrial } from '@/lib/halo-store'
 import { analyzeMissionTrend, TREND_STATES, type TrendState } from '@/lib/mission-trends'
@@ -660,35 +661,15 @@ export function BelongingExperience() {
   const [countdown, setCountdown] = useState(10)
   const [slideIndex, setSlideIndex] = useState(0)
   const [videoReady, setVideoReady] = useState(false)
-  const [videoError, setVideoError] = useState('')
-  const [playbackNotice, setPlaybackNotice] = useState('')
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  const attemptPlayback = useCallback(() => {
-    const video = videoRef.current
-    if (!video) return
-    setPlaybackNotice('')
-    void video.play().catch(reason => {
-      if (reason instanceof DOMException && reason.name === 'NotAllowedError') {
-        setPlaybackNotice('Your browser needs a tap before the film can play with sound.')
-      } else {
-        setVideoError(reason instanceof Error ? `The film could not start: ${reason.message}` : 'The film could not start.')
-      }
-    })
-  }, [])
 
   function startTour() {
     setCountdown(10)
     setSlideIndex(0)
     setVideoReady(false)
-    setVideoError('')
-    setPlaybackNotice('')
     setStage('loading')
   }
 
   function closeTour() {
-    videoRef.current?.pause()
-    if (videoRef.current) videoRef.current.currentTime = 0
     setStage('idle')
   }
 
@@ -705,53 +686,51 @@ export function BelongingExperience() {
   }, [stage])
 
   useEffect(() => {
-    if (stage === 'playing' && videoReady) attemptPlayback()
-  }, [attemptPlayback, stage, videoReady])
-
-  useEffect(() => {
     if (stage === 'idle') return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = previousOverflow }
   }, [stage])
 
-  return <section className="belonging-page">
-    <div className="belonging-copy">
-      <div className="belonging-kicker"><HeartHandshake aria-hidden="true"/> EXPERIMENTAL FEATURE</div>
-      <h2>Belonging</h2>
-      <p className="belonging-description">Take an optional daily visit to familiar places and sounds from Japan. The supplied one-hour scenic film begins after a full-screen photo slideshow while the video loads.</p>
-      <p className="belonging-boundary">A comfort experience, not treatment for loneliness or depression. Reach out to your crew or support team if you need more support.</p>
-      <div className="belonging-details"><span>About 1 hour</span><span>10-second photo slideshow</span><span>Video includes calming music</span></div>
-      <button className="primary-button belonging-start" type="button" onClick={startTour}><Play aria-hidden="true"/> Start Japan hometown tour</button>
-    </div>
-    {stage !== 'idle' && <div className="belonging-stage" role="dialog" aria-modal="true" aria-label="Japan hometown relaxation film">
-      <video
-        ref={videoRef}
-        className={`belonging-video ${stage === 'playing' ? 'is-visible' : ''}`}
-        src="/api/belonging-video"
-        preload="auto"
-        playsInline
-        controls={stage === 'playing'}
-        onCanPlay={() => setVideoReady(true)}
-        onError={() => setVideoError('The Japan relaxation film could not be loaded. Check that the local video file is available.')}
-      />
-      {stage === 'loading' && <>
-        <img key={belongingScenes[slideIndex].src} className="belonging-slide" src={belongingScenes[slideIndex].src} alt={belongingScenes[slideIndex].alt}/>
-        <div className="belonging-stage-shade"/>
-        <div className="belonging-loading-copy" role="status" aria-live="polite">
-          <span>YOUR DAILY VISIT HOME</span>
-          <h2>Take a breath. Settle in.</h2>
-          <p>Preparing the Japan scenic film · {countdown} seconds</p>
-          <div className="belonging-loading-track"><i style={{ width: `${(10 - countdown) * 10}%` }}/></div>
-          {videoError && <p className="belonging-video-error" role="alert">{videoError}</p>}
-        </div>
-      </>}
-      {stage === 'playing' && !videoReady && !videoError && <p className="belonging-buffering" role="status">Preparing the film and soundtrack…</p>}
-      {stage === 'playing' && videoError && <p className="belonging-video-error belonging-video-error-overlay" role="alert">{videoError}</p>}
-      {stage === 'playing' && playbackNotice && <div className="belonging-playback-prompt" role="status"><span>{playbackNotice}</span><button className="secondary-button" type="button" onClick={attemptPlayback}>Play with sound</button></div>}
-      <button className="quiet-button belonging-close" type="button" onClick={closeTour}>Close tour</button>
-    </div>}
-  </section>
+  return <>
+    <section className="belonging-page">
+      <div className="belonging-copy">
+        <div className="belonging-kicker"><HeartHandshake aria-hidden="true"/> EXPERIMENTAL FEATURE</div>
+        <h2>Belonging</h2>
+        <p className="belonging-description">Take an optional daily visit to familiar places and sounds from Japan. The scenic film begins after a full-screen photo slideshow.</p>
+        <p className="belonging-boundary">A comfort experience, not treatment for loneliness or depression. Reach out to your crew or support team if you need more support.</p>
+        <div className="belonging-details"><span>About 1 hour</span><span>10-second photo slideshow</span><span>Video includes calming music</span></div>
+        <button className="primary-button belonging-start" type="button" onClick={startTour}><Play aria-hidden="true"/> Start Japan hometown tour</button>
+      </div>
+    </section>
+    {stage !== 'idle' && typeof document !== 'undefined' && createPortal(
+      <div className="belonging-stage" role="dialog" aria-modal="true" aria-label="Japan hometown relaxation film">
+        {stage === 'playing' && <iframe
+          className="belonging-video is-visible"
+          src="https://player.vimeo.com/video/1246968373?autopause=0&amp;player_id=0&amp;app_id=58479&amp;autoplay=1"
+          title="Japan 4K - Scenic Relaxation Film With Calming Music"
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          onLoad={() => setVideoReady(true)}
+          allowFullScreen
+        />}
+        {stage === 'loading' && <>
+          <img key={belongingScenes[slideIndex].src} className="belonging-slide" src={belongingScenes[slideIndex].src} alt={belongingScenes[slideIndex].alt}/>
+          <div className="belonging-stage-shade"/>
+          <div className="belonging-loading-copy" role="status" aria-live="polite">
+            <span>YOUR DAILY VISIT HOME</span>
+            <h2>Take a breath. Settle in.</h2>
+            <p>Preparing the Japan scenic film · {countdown} seconds</p>
+            <div className="belonging-loading-track"><i style={{ width: `${(10 - countdown) * 10}%` }}/></div>
+          </div>
+        </>}
+        {stage === 'playing' && !videoReady && <p className="belonging-buffering" role="status">Loading the Vimeo film…</p>}
+        {stage === 'playing' && <a className="belonging-vimeo-fallback" href="https://vimeo.com/1246968373" target="_blank" rel="noopener noreferrer">Open film on Vimeo</a>}
+        <button className="quiet-button belonging-close" type="button" onClick={closeTour}>Close tour</button>
+      </div>,
+      document.body,
+    )}
+  </>
 }
 
 type YukiIntent = 'overview' | 'research' | 'games' | 'mission-analysis' | 'chat'
